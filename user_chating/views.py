@@ -6,7 +6,8 @@ from django.template import Context
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.http import HttpResponse
-from .models import Users, UsersAuth, is_authorized, Chats
+import email
+from .models import Users, UsersAuth, is_authorized, Chats, Messages
 
 
 # Create your views here.
@@ -50,12 +51,12 @@ def index(request):
 
 
 def login_required(func):
-    def wrapper(request):
+    def wrapper(request, *args, **kwargs):
         if not ('token' in request.COOKIES):
             return redirect('/')
         if not is_authorized(request.COOKIES['token']):
             return redirect('/')
-        res = func(request)
+        res = func(request, *args, **kwargs)
         return res
     return wrapper
 
@@ -73,8 +74,6 @@ def lk(request):
         render_chat["url"] = chat.url
         render_chats_arr.append(render_chat)
 
-    print(render_chats_arr)
-
     response = render(request, 'lk.html', context={"username": "USERNAME!!!", "chats": render_chats_arr})
     print(request.COOKIES['token'])
     return response
@@ -90,12 +89,47 @@ def logout(request):
 def create_chat(request):
     auth = UsersAuth.objects.filter(token=request.COOKIES['token']).first()
     user = Users.objects.filter(username=auth.username).first()
-    chat = Chats(title='TITLE'+str(uuid4()))
-    chat.save()
-    chat.users.add(user)
-    chat.save()
+    if request.method == 'POST':
+        title = request.POST['title']
+        chat = Chats(title=title, url=uuid4())
+        chat.save()
+        chat.users.add(user)
+        chat.save()
+        return redirect('../')
+    return render(request, 'create_chat.html', context={})
 
 
-def chatting(request):
-    return HttpResponse('ok')
+@login_required
+def delete_chat(request):
+    auth = UsersAuth.objects.filter(token=request.COOKIES['token']).first()
+    user = Users.objects.filter(username=auth.username).first()
+    if request.method == 'POST':
+        check_values = request.POST.getlist('chat[]')
+        for chat in check_values:
+            rem_chat = Chats.objects.filter(url=chat).first()
+            rem_chat.users.remove(user)
+            rem_chat.save()
+        return redirect('../')
 
+    chats = Chats.objects.filter(users=user)
+    if not chats:
+        return redirect('../')
+    return render(request, 'del_chat.html', context={"chats": chats})
+
+
+@login_required
+def chatting(request, url):
+    auth = UsersAuth.objects.filter(token=request.COOKIES['token']).first()
+    user = Users.objects.filter(username=auth.username).first()
+    chat = Chats.objects.filter(users=user, url=url).first()
+    if request.method == 'POST':
+        new_msg = Messages(username=user.username, message=request.POST['msg'])
+        new_msg.save()
+        new_msg.chats.add(chat)
+        new_msg.save()
+
+    if not chat:
+        return redirect('../')
+    messages = Messages.objects.filter(chats=chat)
+    print(messages)
+    return render(request, 'chatting.html', context={"messages": messages})

@@ -39,3 +39,11 @@ class Chats(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Messages(models.Model):
+    chats = models.ManyToManyField(Chats)
+    username = models.CharField(max_length=50)
+    message = models.TextField()
+    senddate = models.DateTimeField(default=datetime.now())
+    identifier = models.CharField(max_length=100, default=uuid4())

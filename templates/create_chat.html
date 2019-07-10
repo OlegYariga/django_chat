@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+{% extends 'header.html' %}
+{% block content %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+
+.container{
+    margin-left: auto;
+    margin-right: auto;
+    width: 30%;
+}
+input {
+width: 100%;
+}
+
+</style>
+<body>
+    <div class="container">
+        <form method="POST">
+            {% csrf_token %}
+            <input type="text" placeholder="Enter chat name" required maxlength="20" name="title">
+            <button type="submit" class="btn btn-danger btn-block">Создать чат</button>
+        </form>
+    </div>
+</body>
+</html>
+{% endblock %}

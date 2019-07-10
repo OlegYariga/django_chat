@@ -1,0 +1,92 @@
+<!doctype html>
+{% extends 'header.html' %}
+{% block content %}
+<html lang="en">
+  <head>
+      {% load staticfiles %}
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <title>Личный кабинет Link</title>
+  </head>
+  <style>
+  body{
+  background: #e5e5e5;
+  }
+
+.block {
+    width: 200px;	height: 150px; /* Размеры */
+    background: #ffffff; /* Цвет фона */
+    border: 3px solid #f0f0f0; /* Белая рамка */
+    border-radius: 10px; /* Радиус скругления */
+   }
+input[type=checkbox] {
+  display: none;
+}
+
+input[type=checkbox]+label {
+  display: inline-block;
+  margin: -2px;
+  padding: 4px 12px;
+  margin-bottom: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: #333;
+  text-align: center;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+  vertical-align: middle;
+  cursor: pointer;
+  background-color: #f5f5f5;
+  background-repeat: repeat-x;
+  width: 100%;
+}
+
+input[type=checkbox]:checked+label {
+  background-image: none;
+  outline: 0;
+  background-color: #505050;
+  color: #ffffff;
+
+}
+.container{
+    margin-left: auto;
+    margin-right: auto;
+    width: 30%;
+}
+
+  </style>
+  <body>
+
+
+<div class="container">
+    <br/>
+    <br/>
+    Выберите элементы, которые хотите удалить.
+    <br/>
+    <br/>
+    <form method="POST">
+
+        {% for chat in chats %}
+        <div class="form-group">
+            {% csrf_token %}
+            <input type="checkbox" id="{{chat.url}}" name="chat[]" value="{{chat.url}}">
+            <label class="btn btn-dark" for="{{chat.url}}">{{chat.title}}</label>
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-danger btn-block">Удалить</button>
+</form>
+</div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  </body>
+</html>
+{% endblock %}
