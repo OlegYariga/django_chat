@@ -5,41 +5,304 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+
+
 </head>
 <style>
+body{
 
-.container{
-    margin-left: auto;
-    margin-right: auto;
-    width: 30%;
-    background-color: #303030;
-    overflow: auto;
-    max-height: 400px;
+background: #ddd;
+
 }
-input[type=text] {
-position: fixed;
-bottom: 50px;
+
+a {
+
+			text-decoration: none !important;
+
+		}
+
+		label {
+
+			color: rgba(120, 144, 156,1.0) !important;
+
+		}
+
+		.btn:focus, .btn:active:focus, .btn.active:focus {
+
+			outline: none !important;
+			box-shadow: 0 0px 0px rgba(120, 144, 156,1.0) inset, 0 0 0px rgba(120, 144, 156,0.8);
+}
+
+
+textarea:focus,
+		input[type="text"]:focus,
+		input[type="password"]:focus,
+		input[type="datetime"]:focus,
+		input[type="datetime-local"]:focus,
+		input[type="date"]:focus,
+		input[type="month"]:focus,
+		input[type="time"]:focus,
+		input[type="week"]:focus,
+		input[type="number"]:focus,
+		input[type="email"]:focus,
+		input[type="url"]:focus,
+		input[type="search"]:focus,
+		input[type="tel"]:focus,
+		input[type="color"]:focus,
+		.uneditable-input:focus {
+		border-color: rgba(120, 144, 156,1.0); color: rgba(120, 144, 156,1.0); opacity: 0.9;
+		box-shadow: 0 0px 0px rgba(120, 144, 156,1.0) inset, 0 0 10px rgba(120, 144, 156,0.3);
+		outline: 0 none; }
+
+
+.card::-webkit-scrollbar {
+    width: 1px;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 9px;
+	background: rgba(96, 125, 139,0.99);
+}
+
+.balon1, .balon2 {
+
+	margin-top: 5px !important;
+	margin-bottom: 5px !important;
+
+	}
+
+
+.balon1 a {
+
+	background: #42a5f5;
+	color: #fff !important;
+	border-radius: 20px 20px 3px 20px;
+	display: block;
+	max-width: 75%;
+	padding: 7px 13px 7px 13px;
+
+	}
+
+.balon1:before {
+
+	content: attr(data-is);
+	position: absolute;
+	right: 15px;
+	bottom: -0.8em;
+	display: block;
+	font-size: .750rem;
+	color: rgba(84, 110, 122,1.0);
+
+	}
+
+.balon2 a {
+
+	background: #f1f1f1;
+	color: #000 !important;
+	border-radius: 20px 20px 20px 3px;
+	display: block;
+	max-width: 75%;
+	padding: 7px 13px 7px 13px;
+
+	}
+
+.balon2:before {
+
+	content: attr(data-is);
+	position: absolute;
+	left: 13px;
+	bottom: -0.8em;
+	display: block;
+	font-size: .750rem;
+	color: rgba(84, 110, 122,1.0);
+
+	}
+
+.bg-sohbet:before {
+
+	content: "";
+	background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTAgOCkiIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCI+PGNpcmNsZSBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMS4yNSIgY3g9IjE3NiIgY3k9IjEyIiByPSI0Ii8+PHBhdGggZD0iTTIwLjUuNWwyMyAxMW0tMjkgODRsLTMuNzkgMTAuMzc3TTI3LjAzNyAxMzEuNGw1Ljg5OCAyLjIwMy0zLjQ2IDUuOTQ3IDYuMDcyIDIuMzkyLTMuOTMzIDUuNzU4bTEyOC43MzMgMzUuMzdsLjY5My05LjMxNiAxMC4yOTIuMDUyLjQxNi05LjIyMiA5LjI3NC4zMzJNLjUgNDguNXM2LjEzMSA2LjQxMyA2Ljg0NyAxNC44MDVjLjcxNSA4LjM5My0yLjUyIDE0LjgwNi0yLjUyIDE0LjgwNk0xMjQuNTU1IDkwcy03LjQ0NCAwLTEzLjY3IDYuMTkyYy02LjIyNyA2LjE5Mi00LjgzOCAxMi4wMTItNC44MzggMTIuMDEybTIuMjQgNjguNjI2cy00LjAyNi05LjAyNS0xOC4xNDUtOS4wMjUtMTguMTQ1IDUuNy0xOC4xNDUgNS43IiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMS4yNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTg1LjcxNiAzNi4xNDZsNS4yNDMtOS41MjFoMTEuMDkzbDUuNDE2IDkuNTIxLTUuNDEgOS4xODVIOTAuOTUzbC01LjIzNy05LjE4NXptNjMuOTA5IDE1LjQ3OWgxMC43NXYxMC43NWgtMTAuNzV6IiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMS4yNSIvPjxjaXJjbGUgZmlsbD0iIzAwMCIgY3g9IjcxLjUiIGN5PSI3LjUiIHI9IjEuNSIvPjxjaXJjbGUgZmlsbD0iIzAwMCIgY3g9IjE3MC41IiBjeT0iOTUuNSIgcj0iMS41Ii8+PGNpcmNsZSBmaWxsPSIjMDAwIiBjeD0iODEuNSIgY3k9IjEzNC41IiByPSIxLjUiLz48Y2lyY2xlIGZpbGw9IiMwMDAiIGN4PSIxMy41IiBjeT0iMjMuNSIgcj0iMS41Ii8+PHBhdGggZmlsbD0iIzAwMCIgZD0iTTkzIDcxaDN2M2gtM3ptMzMgODRoM3YzaC0zem0tODUgMThoM3YzaC0zeiIvPjxwYXRoIGQ9Ik0zOS4zODQgNTEuMTIybDUuNzU4LTQuNDU0IDYuNDUzIDQuMjA1LTIuMjk0IDcuMzYzaC03Ljc5bC0yLjEyNy03LjExNHpNMTMwLjE5NSA0LjAzbDEzLjgzIDUuMDYyLTEwLjA5IDcuMDQ4LTMuNzQtMTIuMTF6bS04MyA5NWwxNC44MyA1LjQyOS0xMC44MiA3LjU1Ny00LjAxLTEyLjk4N3pNNS4yMTMgMTYxLjQ5NWwxMS4zMjggMjAuODk3TDIuMjY1IDE4MGwyLjk0OC0xOC41MDV6IiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMS4yNSIvPjxwYXRoIGQ9Ik0xNDkuMDUgMTI3LjQ2OHMtLjUxIDIuMTgzLjk5NSAzLjM2NmMxLjU2IDEuMjI2IDguNjQyLTEuODk1IDMuOTY3LTcuNzg1LTIuMzY3LTIuNDc3LTYuNS0zLjIyNi05LjMzIDAtNS4yMDggNS45MzYgMCAxNy41MSAxMS42MSAxMy43MyAxMi40NTgtNi4yNTcgNS42MzMtMjEuNjU2LTUuMDczLTIyLjY1NC02LjYwMi0uNjA2LTE0LjA0MyAxLjc1Ni0xNi4xNTcgMTAuMjY4LTEuNzE4IDYuOTIgMS41ODQgMTcuMzg3IDEyLjQ1IDIwLjQ3NiAxMC44NjYgMy4wOSAxOS4zMzEtNC4zMSAxOS4zMzEtNC4zMSIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjEuMjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48L3N2Zz4=');
+	opacity: 0.06;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	height:100%;
+	position: absolute;
+
+	}
+.input-container{
 width: 100%;
 }
-button{
-position: fixed;
-bottom: 25px;
-width: 100%;
+
+.forma{
+position:abcolute;
+bottom: 20px;
+
 }
 </style>
 <body>
-<div class="container">
-        {% for message in messages %}
-            {{message.message}}
-    <br/>
-    <br/>
-        {% endfor %}
-</div>
-<form method="POST">
-    {% csrf_token %}
-    <input type="text" placeholder="Введите сообщение" name="msg" required autofocus>
-    <button type="submit" class="btn btn-danger btn-block">Отправить</button>
-</form>
+
+				  <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<div class="jumbotron m-0 p-0 bg-transparent">
+		<div class="row m-0 p-0 position-relative">
+		  <div class="col-12 p-0 m-0 position-absolute" style="right: 0px;">
+			<div class="card border-0 rounded" style="box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.10), 0 6px 10px 0 rgba(0, 0, 0, 0.01); overflow: hidden; height: 100vh;">
+
+			  <div class="card-header p-1 bg-light border border-top-0 border-left-0 border-right-0" style="color: rgba(96, 125, 139,1.0);">
+
+				<h6 class="float-left" style="margin: 0px; margin-left: 10px;">Пользователи: &nbsp &nbsp
+                    {% for user in users %} {{user}} &nbsp &nbsp {% endfor %}
+                    <i class="fa fa-check text-primary" title="Onaylanmış Hesap!" aria-hidden="true"></i> </br><small> </small></h6>
+
+				  <div class="float-right">
+					<button class="btn btn-outline-secondary" onclick='location.href="../add_users/"+url'>Добавить пользователей в чат</button>
+				  </div>
+				  <div class="dropdown show">
+
+					  <a id="dropdownMenuLink" data-toggle="dropdown" class="btn btn-sm float-right text-secondary" role="button"><h5><i class="fa fa-ellipsis-h" title="Ayarlar!" aria-hidden="true"></i>&nbsp;</h5></a>
+
+					<div class="dropdown-menu dropdown-menu-right border p-0" aria-labelledby="dropdownMenuLink">
+
+						<a class="dropdown-item p-2 text-secondary" href="#"> <i class="fa fa-user m-1" aria-hidden="true"></i> Profile </a>
+						<hr class="my-1"></hr>
+						<a class="dropdown-item p-2 text-secondary" href="#"> <i class="fa fa-trash m-1" aria-hidden="true"></i> Delete </a>
+
+					</div>
+				  </div>
+
+			  </div>
+
+				<div class="card bg-sohbet border-0 m-0 p-0" style="height: 100vh;">
+			  <div id="sohbet" class="card border-0 m-0 p-0 position-relative bg-transparent" style="overflow-y: auto; height: 90%;">
+				<script>
+					var start_id = 0;
+				</script>
+
+				{% for message in messages %}
+				  <script>
+					  start_id = {{message.id}};
+				  </script>
+				<div class="{% if message.username == me %} balon1 {% else %} balon2 {% endif %} p-2 m-0 position-relative"
+					 data-is="{{message.username}}">
+
+					<a class="{% if message.username == me %} float-right {% else %} float-left sohbet2 {% endif %}">
+						{{message.message}} </a>
+
+				</div>
+				{% endfor %}
+
+				<br/>
+				  <br/>
+
+			  </div>
+			  </div>
+
+
+			</div>
+
+
+			  <form method="POST" class="forma" name="ajax_form" id="ajax_form" action="">
+				  {% csrf_token %}
+				  <div class="input-container">
+					  <div class="input-group mb-3">
+						  <textarea id="textAr" name="msg" style="min-height:50px; max-height:150px;" type="text" class="form-control" placeholder="Введите Ваше сообщение" aria-label="Recipient's username" aria-describedby="button-addon2"></textarea>
+						  <div class="input-group-append">
+							  <button name="submit" id="submit" type="button"  class="btn btn-outline-secondary" onclick='sendMsg()'>Отправить</button>
+						  </div>
+					  </div>
+				  </div>
+
+			  </form>
+
+
+		  </div>
+
+		</div>
+
+	  </div>
+
+<script>window.scrollTo(0,document.body.scrollHeight);</script>
+<!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4" crossorigin="anonymous"></script>
+
+<script>
+var msg_val = 0;
+if (start_id > 0){
+	msg_val = start_id;
+}
+var str_url = window.location.href;
+var arr_url = str_url.split('/');
+var url = arr_url[arr_url.length - 1];
+var objDiv = document.getElementById("sohbet");
+	objDiv.scrollTop = objDiv.scrollHeight;
+
+	function getMsg() {
+	  let xhr = new XMLHttpRequest(); // инициализируем переменную новым объектом XMLHttpRequest
+	  xhr.open("GET", "http://127.0.0.1:8000/get_message"); // определяем параметры для запроса
+	  xhr.setRequestHeader('val', msg_val);
+	  xhr.setRequestHeader('url', url);
+	  xhr.send(); // отправляем запрос на сервер
+
+	  xhr.onreadystatechange = function() {
+	    // проверяем состояние запроса и числовой код состояния HTTP ответа
+	    if (this.readyState == 4 && this.status == 200) {
+	      const data = JSON.parse(this.responseText); // анализируем строку в формате JSON и инициализируем переменную значением, полученным в ходе анализа
+		  var stl;
+		  var username = data.username
+		  var me = data.me
+		  var message = data.message
+		  var pos;
+
+		  if (username == me){
+		  	stl = "balon1 p-2 m-0 position-relative";
+		  	pos = "float-right";
+		  }else{
+		  	stl = "balon2 p-2 m-0 position-relative";
+		  	pos = "float-left sohbet2";
+		  }
+
+
+
+	      document.getElementById("sohbet").innerHTML += "<div \
+	      class='"+stl+"' \
+	      data-is='"+username+"'> \
+	      <a class='"+pos+"'>"+message+"</a>\
+	      </div>"; // находим элемент по id и изменяем его содержимое значением ключа объекта, содержащегося в переменной
+
+
+			var objDiv = document.getElementById("sohbet");
+			objDiv.scrollTop = objDiv.scrollHeight;
+			msg_val = data['msg_val'];
+		  //getMsg();
+	    }
+	  };
+	}
+
+ setInterval(getMsg, 1000);
+</script>
+<script>
+    function sendMsg() {
+        // Form fields, see IDs above
+        if (document.querySelector('#textAr').value == '' || document.querySelector('#textAr').value == ' '){
+        alert ("Сообщение не должно быть пустым!");
+        return (false);
+        }
+        var params = 'msg='+document.querySelector('#textAr').value;
+
+        const http = new XMLHttpRequest();
+        http.open('POST', '/lk/'+url);
+        http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        //http.setRequestHeader('csrftoken', {% csrf_token %});
+        http.send(params) // Make sure to stringify
+        http.onload = function() {
+            document.getElementById('textAr').value='';
+        }
+    }
+</script>
 </body>
 </html>
 {% endblock %}

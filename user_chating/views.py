@@ -8,7 +8,10 @@ from django.shortcuts import render
 from django.http import HttpResponse
 import email
 from .models import Users, UsersAuth, is_authorized, Chats, Messages
-
+import json
+import random
+from django.views.decorators.csrf import csrf_exempt
+import datetime
 
 # Create your views here.
 def index(request):
@@ -31,12 +34,12 @@ def index(request):
         else:
             username = request.POST['username']
             password = request.POST['password']
-            firstname = request.POST['firstname']
-            secondname = request.POST['secondname']
+            #firstname = request.POST['firstname']
+            #secondname = request.POST['secondname']
             email = request.POST['email']
             if Users.objects.filter(username=username).exists():
                 return render(request, 'regform.html', {'msg': ['Такой пользователь уже существует. Пожалуйста, авторизируйтесь!']})
-            user = Users(username=username, email=email, password=password, firstname=firstname, secondname=secondname)
+            user = Users(username=username, email=email, password=password)
             user.save()
             if user:
                 token = uuid4()
@@ -117,8 +120,10 @@ def delete_chat(request):
     return render(request, 'del_chat.html', context={"chats": chats})
 
 
+@csrf_exempt
 @login_required
 def chatting(request, url):
+    print('Получил форму или загружаю страницу! ')
     auth = UsersAuth.objects.filter(token=request.COOKIES['token']).first()
     user = Users.objects.filter(username=auth.username).first()
     chat = Chats.objects.filter(users=user, url=url).first()
@@ -131,5 +136,70 @@ def chatting(request, url):
     if not chat:
         return redirect('../')
     messages = Messages.objects.filter(chats=chat)
-    print(messages)
-    return render(request, 'chatting.html', context={"messages": messages})
+
+    me = user.username
+    users = []
+    users_in_chat = chat.users.all()
+    for u in users_in_chat:
+        users.append(u.username)
+
+    return render(request, 'chatting.html', context={"messages": messages, "users": users, "me": me})
+
+
+@login_required
+def get_message(request):
+    if 'val' in request.headers and 'url' in request.headers:
+        val = request.headers['val']
+        url = request.headers['url']
+
+    auth = UsersAuth.objects.filter(token=request.COOKIES['token']).first()
+    user = Users.objects.filter(username=auth.username).first()
+    chat = Chats.objects.filter(users=user, url=url).first()
+    print(val)
+    new_message = Messages.objects.filter(id__gt=int(val), chats=chat).first()
+    if new_message:
+        g_username = new_message.username
+        g_me = user.username
+        g_message = new_message.message
+        g_send_date = new_message.senddate
+        response = HttpResponse(json.dumps({"key": "value", "msg_val": new_message.id,
+                                            "username": g_username, "me": g_me,
+                                            "message":g_message, "senddate":  str(datetime.datetime.strftime(g_send_date, "%d.%m %H:%M"))}))
+        response['Access-Control-Allow-Origin'] = '*'
+        return response
+    else:
+        response = HttpResponse()
+        response.status_code = 304
+        response['Access-Control-Allow-Origin'] = '*'
+        return response
+
+
+@login_required
+def add_users(request, url):
+    auth = UsersAuth.objects.filter(token=request.COOKIES['token']).first()
+    user = Users.objects.filter(username=auth.username).first()
+    chat = Chats.objects.filter(users=user, url=url).first()
+    if not chat:
+        return redirect('../')
+    if request.method == 'POST':
+        us = "user"
+        user_list = []
+        new_users_list = []
+        for i in range(15):
+            user_list.append(us+str(i+1))
+        print(user_list)
+        print(request.POST)
+        for user_l in user_list:
+            if user_l in request.POST:
+                new_users_list.append(user_l)
+        print(new_users_list)
+
+        for usr in new_users_list:
+            db_user = Users.objects.filter(username=request.POST[usr]).first()
+            if db_user:
+                chat.users.add(db_user)
+        chat.save()
+        return redirect('../lk/'+url)
+    return render(request, 'add_users.html', context={})
+
+    pass

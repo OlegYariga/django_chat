@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+{% extends 'header.html' %}
+{% block content %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+
+.container{
+    margin-left: auto;
+    margin-right: auto;
+    width: 30%;
+}
+input {
+width: 100%;
+}
+
+</style>
+<body>
+<br/>
+<br/>
+<div class="container">
+<form method="POST">
+     {% csrf_token %}
+  <div class="form-group" id="parent_field">
+    <div class="input-group mb-3">
+        <input name="user1" id="user1" type="text" class="form-control" placeholder="Введите логин пользователя" aria-label="Логин пользователя" aria-describedby="basic-addon2">
+        <div class="input-group-append">
+            <button onclick="create_field()" class="btn btn-outline-secondary" type="button">+</button>
+        </div>
+    </div>
+  </div>
+  <button type="submit" class="btn btn-danger btn-block">Добавить пользователей</button>
+</form>
+</div>
+<script>
+var num = 1;
+    function create_field(){
+    num +=1;
+    if (num < 16){
+    document.getElementById("parent_field").innerHTML += '<div class="input-group mb-3"> \
+        <input name="user'+num+'" id="user'+num+'" type="text" class="form-control" placeholder="Введите логин пользователя" aria-label="Логин пользователя" aria-describedby="basic-addon2"> \
+        <div class="input-group-append"> \
+        </div> \
+    </div>';
+    }
+    }
+</script>
+
+</body>
+</html>
+{% endblock %}

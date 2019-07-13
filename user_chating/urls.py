@@ -10,4 +10,6 @@ urlpatterns = [
     path('create_chat/', views.create_chat, name='create_chat'),
     path('delete_chat/', views.delete_chat, name='delete_chat'),
     path('lk/<url>', views.chatting, name='chatting'),
+    path('get_message', views.get_message, name='get_message'),
+    path('add_users/<url>', views.add_users, name='add_users'),
 ]

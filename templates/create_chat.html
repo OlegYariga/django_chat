@@ -19,13 +19,21 @@ width: 100%;
 
 </style>
 <body>
-    <div class="container">
-        <form method="POST">
-            {% csrf_token %}
-            <input type="text" placeholder="Enter chat name" required maxlength="20" name="title">
-            <button type="submit" class="btn btn-danger btn-block">Создать чат</button>
-        </form>
-    </div>
+<br/>
+<br/>
+<div class="container">
+<form method="POST">
+     {% csrf_token %}
+  <div class="form-group">
+    <label for="exampleInputEmail1">Имя чата</label>
+    <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Введите имя чата" required maxlength="20" name="title">
+    <small id="emailHelp" class="form-text text-muted"></small>
+  </div>
+  <button type="submit" class="btn btn-danger btn-block">Создать чат</button>
+</form>
+</div>
+
+
 </body>
 </html>
 {% endblock %}
