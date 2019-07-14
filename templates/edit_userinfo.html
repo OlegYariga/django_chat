@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+{% extends 'header.html' %}
+{% block content %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+
+.container{
+    margin-left: auto;
+    margin-right: auto;
+    width: 30%;
+}
+input {
+width: 100%;
+}
+
+</style>
+<body>
+<br/>
+<br/>
+<div class="container">
+<form method="POST">
+     {% csrf_token %}
+  <div class="form-group">
+    <label for="exampleInputEmail1">Логин</label>
+    <div id="user_login" class="input-group mb-3">
+        <input name="username" readonly type="text" class="form-control" placeholder="Логин пользователя"
+               aria-label="Recipient's username" aria-describedby="button-addon2" value="{{user.username}}">
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="button" id="button-addon2" onclick="unable_login()" style="font-size: 12pt;">&#9999;</button>
+        </div>
+    </div>
+
+      <label for="exampleInputEmail1">Имя</label>
+    <div id="user_firstname" class="input-group mb-3">
+        <input name="firstname" readonly type="text" class="form-control" placeholder="Имя пользователя"
+               aria-label="Recipient's username" aria-describedby="button-addon2" value="{{user.firstname}}">
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="button" id="button-addon2" onclick="unable_firstname()" style="font-size: 12pt;">&#9999;</button>
+        </div>
+    </div>
+
+    <label for="exampleInputEmail1">Фамилия</label>
+    <div id="user_secondname" class="input-group mb-3">
+        <input name="secondname" readonly type="text" class="form-control" placeholder="Фамилия пользователя"
+               aria-label="Recipient's username" aria-describedby="button-addon2" value="{{user.secondname}}">
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="button" id="button-addon2" onclick="unable_secondname()" style="font-size: 12pt;">&#9999;</button>
+        </div>
+    </div>
+
+      <label for="exampleInputEmail1">E-mail</label>
+    <div id="user_email" class="input-group mb-3">
+        <input name="email" readonly type="text" class="form-control" placeholder="E-mail пользователя"
+               aria-label="Recipient's username" aria-describedby="button-addon2" value="{{user.email}}">
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="button" id="button-addon2" onclick="unable_email()" style="font-size: 12pt;">&#9999;</button>
+        </div>
+    </div>
+
+
+
+      <label for="exampleInputEmail1">Пароль</label>
+    <div id="user_password" class="input-group mb-3">
+        <input name="password" readonly type="password" class="form-control" placeholder="Пароль пользователя"
+               aria-label="Recipient's username" aria-describedby="button-addon2" value="{{user.password}}">
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="button" id="button-addon2" onclick="unable_password()" style="font-size: 12pt;">&#9999;</button>
+        </div>
+    </div>
+
+  </div>
+  <button type="submit" class="btn btn-danger btn-block">Сохранить изменения</button>
+</form>
+</div>
+<script>
+    function unable_login(){
+    alert("Внимание! Изменение логина приведет к потере всех Ваших чатов: Вам придется заново добавиться в чаты, в которых Вы сейчас состоите.");
+        document.getElementById("user_login").innerHTML ='<input name="username" type="text" class="form-control" placeholder="Введите логин"\
+               aria-label="Логин" aria-describedby="button-addon2" value="{{user.username}}">';
+    }
+    function unable_password(){
+        document.getElementById("user_password").innerHTML ='<input name="password" type="text" class="form-control" placeholder="Введите логин"\
+               aria-label="Логин" aria-describedby="button-addon2" value="{{user.password}}">';
+    }
+    function unable_firstname(){
+        document.getElementById("user_firstname").innerHTML ='<input name="firstname" type="text" class="form-control" placeholder="Введите имя пользователя"\
+               aria-label="Логин" aria-describedby="button-addon2" value="{{user.firstname}}">';
+    }
+    function unable_secondname(){
+        document.getElementById("user_secondname").innerHTML ='<input name="secondname" type="text" class="form-control" placeholder="Введите фамилию пользователя"\
+               aria-label="Логин" aria-describedby="button-addon2" value="{{user.secondname}}">';
+    }
+    function unable_email(){
+        document.getElementById("user_email").innerHTML ='<input name="email" type="text" class="form-control" placeholder="Введите E-mail пользователя"\
+               aria-label="Логин" aria-describedby="button-addon2" value="{{user.email}}">';
+    }
+
+</script>
+
+</body>
+</html>
+{% endblock %}

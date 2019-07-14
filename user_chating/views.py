@@ -12,6 +12,8 @@ import json
 import random
 from django.views.decorators.csrf import csrf_exempt
 import datetime
+from background_task import background
+from apscheduler.schedulers.background import BackgroundScheduler
 
 # Create your views here.
 def index(request):
@@ -123,7 +125,6 @@ def delete_chat(request):
 @csrf_exempt
 @login_required
 def chatting(request, url):
-    print('Получил форму или загружаю страницу! ')
     auth = UsersAuth.objects.filter(token=request.COOKIES['token']).first()
     user = Users.objects.filter(username=auth.username).first()
     chat = Chats.objects.filter(users=user, url=url).first()
@@ -135,8 +136,8 @@ def chatting(request, url):
 
     if not chat:
         return redirect('../')
-    messages = Messages.objects.filter(chats=chat)
-
+    messages = Messages.objects.filter(chats=chat).order_by('id')
+    #print(messages)
     me = user.username
     users = []
     users_in_chat = chat.users.all()
@@ -155,7 +156,6 @@ def get_message(request):
     auth = UsersAuth.objects.filter(token=request.COOKIES['token']).first()
     user = Users.objects.filter(username=auth.username).first()
     chat = Chats.objects.filter(users=user, url=url).first()
-    print(val)
     new_message = Messages.objects.filter(id__gt=int(val), chats=chat).first()
     if new_message:
         g_username = new_message.username
@@ -187,12 +187,9 @@ def add_users(request, url):
         new_users_list = []
         for i in range(15):
             user_list.append(us+str(i+1))
-        print(user_list)
-        print(request.POST)
         for user_l in user_list:
             if user_l in request.POST:
                 new_users_list.append(user_l)
-        print(new_users_list)
 
         for usr in new_users_list:
             db_user = Users.objects.filter(username=request.POST[usr]).first()
@@ -202,4 +199,68 @@ def add_users(request, url):
         return redirect('../lk/'+url)
     return render(request, 'add_users.html', context={})
 
-    pass
+
+@login_required
+def check_online(request, url):
+    auth = UsersAuth.objects.filter(token=request.COOKIES['token']).first()
+    user = Users.objects.filter(username=auth.username).first()
+    user.is_online = True
+    user.when_online = datetime.datetime.utcnow()
+    user.save()
+    chat = Chats.objects.filter(users=user, url=url).first()
+    users_in_chat = chat.users.order_by('username').all()
+    users = []
+    for u in users_in_chat:
+        users.append({"username": u.username, "is_online": u.is_online})
+    return HttpResponse(json.dumps(users))
+
+
+@login_required
+def edit_userinfo(request):
+    auth = UsersAuth.objects.filter(token=request.COOKIES['token']).first()
+    user = Users.objects.filter(username=auth.username).first()
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        firstname = request.POST['firstname']
+        secondname = request.POST['secondname']
+        email = request.POST['email']
+        if username == "" or password == "":
+            return render(request, 'edit_userinfo.html', context={"user": user})
+        if not (user.username == username):
+            us_exist = Users.objects.filter(username=username).first()
+            if not us_exist:
+                Users.objects.filter(username=user.username).delete()
+                new_user = Users(username=username, password=password, firstname=firstname,
+                                 secondname=secondname, email=email)
+                new_user.save()
+                auth.username = new_user.username
+                auth.save()
+                return render(request, 'edit_userinfo.html', context={"user": new_user})
+        user.password = password
+        user.firstname = firstname
+        user.secondname = secondname
+        user.email = email
+        user.save()
+        auth.username = username
+        auth.save()
+        #return redirect('../')
+    return render(request, 'edit_userinfo.html', context={"user": user})
+
+
+
+def dis_online_users():
+    date_time_now = datetime.datetime.utcnow()
+    users = Users.objects.filter(when_online__lt=date_time_now, is_online=True)
+    for user in users:
+        user.is_online = False
+        user.save()
+    return True
+
+
+def start_background():
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(dis_online_users, 'interval', seconds=20)
+    scheduler.start()
+
+start_background()

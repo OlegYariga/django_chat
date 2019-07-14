@@ -12,6 +12,8 @@ class Users(models.Model):
     email = models.EmailField()
     password = models.CharField(max_length=50, default=None)
     last_login = models.DateTimeField(default=datetime.now())
+    is_online = models.BooleanField(default=False)
+    when_online = models.DateTimeField(default=datetime.utcnow())
 
     def create(self):
         self.save()
@@ -23,6 +25,8 @@ class Users(models.Model):
 class UsersAuth(models.Model):
     username = models.CharField(max_length=100)
     token = models.CharField(max_length=100, default=uuid4())
+    is_online = models.BooleanField(default=False)
+    when_online = models.DateTimeField(default=datetime.utcnow())
 
 
 def is_authorized(token):

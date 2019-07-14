@@ -152,7 +152,10 @@ bottom: 20px;
 			  <div class="card-header p-1 bg-light border border-top-0 border-left-0 border-right-0" style="color: rgba(96, 125, 139,1.0);">
 
 				<h6 class="float-left" style="margin: 0px; margin-left: 10px;">Пользователи: &nbsp &nbsp
-                    {% for user in users %} {{user}} &nbsp &nbsp {% endfor %}
+					<span id="users_head">
+
+					</span>
+
                     <i class="fa fa-check text-primary" title="Onaylanmış Hesap!" aria-hidden="true"></i> </br><small> </small></h6>
 
 				  <div class="float-right">
@@ -302,6 +305,48 @@ var objDiv = document.getElementById("sohbet");
             document.getElementById('textAr').value='';
         }
     }
+
+    textAr.onkeydown = function(e){
+  e = e || event;
+  if (e.keyCode === 13 && !e.ctrlKey) {
+  	sendMsg();
+  }
+  return true;
+ }
+//
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
+
+var str_url = window.location.href;
+var arr_url = str_url.split('/');
+var url = arr_url[arr_url.length - 1];
+
+	function check_online() {
+	  let xhrs = new XMLHttpRequest(); // инициализируем переменную новым объектом XMLHttpRequest
+	  xhrs.open("GET", "http://127.0.0.1:8000/check_online/"+url); // определяем параметры для запроса
+	  xhrs.send(); // отправляем запрос на сервер
+
+	  xhrs.onreadystatechange = function() {
+	    // проверяем состояние запроса и числовой код состояния HTTP ответа
+	    if (this.readyState == 4 && this.status == 200) {
+	      const data = JSON.parse(this.responseText); // анализируем строку в формате JSON и инициализируем переменную значением, полученным в ходе анализа
+		  document.getElementById("users_head").innerHTML = ' ';
+			for(var i=0; i<data.length; i++){
+				if (data[i].is_online == true){
+				document.getElementById("users_head").innerHTML += "<span style='color: #0dba3b;'>"+data[i].username+"&nbsp &nbsp </span>";
+				}else{
+				document.getElementById("users_head").innerHTML += "<span style='color: #bababa;'>"+data[i].username+"&nbsp &nbsp </span>";
+				}
+			}
+	    }
+	  };
+	}
+ check_online();
+ setInterval(check_online, 3000);
+
+
 </script>
 </body>
 </html>

@@ -12,4 +12,6 @@ urlpatterns = [
     path('lk/<url>', views.chatting, name='chatting'),
     path('get_message', views.get_message, name='get_message'),
     path('add_users/<url>', views.add_users, name='add_users'),
+    path('check_online/<url>', views.check_online, name='check_online'),
+    path('edit_userinfo', views.edit_userinfo, name='edit_userinfo'),
 ]
