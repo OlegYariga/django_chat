@@ -15,6 +15,7 @@ import datetime
 from background_task import background
 from apscheduler.schedulers.background import BackgroundScheduler
 
+
 # Create your views here.
 def index(request):
     if 'token' in request.COOKIES:
@@ -30,7 +31,10 @@ def index(request):
                 usr = UsersAuth(username=username, token=token)
                 usr.save()
                 response = redirect('/lk')
-                response.set_cookie(key='token', value=token, max_age=5184000)
+                if 'check' in request.POST:
+                    response.set_cookie(key='token', value=token, max_age=5184000)
+                else:
+                    response.set_cookie(key='token', value=token)
                 return response
             return render(request, 'regform.html', {'msg': ["Неверное имя пользователя или пароль!"]})
         else:
@@ -49,7 +53,10 @@ def index(request):
                 usr.save()
                 #token = usr.login(username=username)
                 response = redirect('/lk')
-                response.set_cookie(key='token', value=token, max_age=5184000)
+                if 'check' in request.POST:
+                    response.set_cookie(key='token', value=token, max_age=5184000)
+                else:
+                    response.set_cookie(key='token', value=token)
                 return response
     else:
         return render(request, 'regform.html', context={})
@@ -247,8 +254,6 @@ def edit_userinfo(request):
         user.secondname = secondname
         user.email = email
         user.save()
-        auth.username = username
-        auth.save()
         #return redirect('../')
     return render(request, 'edit_userinfo.html', context={"user": user})
 
@@ -301,7 +306,10 @@ def get_access_to_chat(request, url):
                                                   "Теперь Вы можете перейти на главную страницу.",
                                            'status': 3})
                 print(token)
-                response.set_cookie(key='token', value=token, max_age=5184000)
+                if 'check' in request.POST:
+                    response.set_cookie(key='token', value=token, max_age=5184000)
+                else:
+                    response.set_cookie(key='token', value=token)
                 return response
             return render(request, 'get_access_to_chat.html', {'msg': ["Неверное имя пользователя или пароль!"]})
         else:
@@ -336,7 +344,10 @@ def get_access_to_chat(request, url):
                                                   "Теперь Вы можете перейти на главную страницу.",
                                            'status': 3})
                 print(token)
-                response.set_cookie(key='token', value=token, max_age=5184000)
+                if 'check' in request.POST:
+                    response.set_cookie(key='token', value=token, max_age=5184000)
+                else:
+                    response.set_cookie(key='token', value=token)
                 return response
 
     # ------------------------////---------------------------------------------------

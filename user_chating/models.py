@@ -11,7 +11,7 @@ class Users(models.Model):
     secondname = models.CharField(max_length=50)
     email = models.EmailField()
     password = models.CharField(max_length=50, default=None)
-    last_login = models.DateTimeField(default=datetime.now())
+    last_login = models.DateTimeField(default=datetime.utcnow())
     is_online = models.BooleanField(default=False)
     when_online = models.DateTimeField(default=datetime.utcnow())
 
@@ -50,5 +50,5 @@ class Messages(models.Model):
     chats = models.ManyToManyField(Chats)
     username = models.CharField(max_length=50)
     message = models.TextField()
-    senddate = models.DateTimeField(default=datetime.now())
+    senddate = models.DateTimeField(default=datetime.utcnow())
     identifier = models.CharField(max_length=100, default=uuid4())
