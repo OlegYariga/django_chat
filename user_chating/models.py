@@ -40,6 +40,7 @@ class Chats(models.Model):
     users = models.ManyToManyField(Users)
     title = models.CharField(max_length=20)
     url = models.CharField(max_length=100, default=uuid4())
+    is_opened = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title

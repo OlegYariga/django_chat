@@ -201,11 +201,7 @@ bottom: 20px;
 			  </div>
 			  </div>
 
-
-			</div>
-
-
-			  <form method="POST" class="forma" name="ajax_form" id="ajax_form" action="">
+			<form method="POST" class="forma" name="ajax_form" id="ajax_form" action="">
 				  {% csrf_token %}
 				  <div class="input-container">
 					  <div class="input-group mb-3">
@@ -217,6 +213,7 @@ bottom: 20px;
 				  </div>
 
 			  </form>
+			</div>
 
 
 		  </div>
@@ -245,7 +242,7 @@ var objDiv = document.getElementById("sohbet");
 
 	function getMsg() {
 	  let xhr = new XMLHttpRequest(); // инициализируем переменную новым объектом XMLHttpRequest
-	  xhr.open("GET", "http://127.0.0.1:8000/get_message"); // определяем параметры для запроса
+	  xhr.open("GET", "/get_message"); // определяем параметры для запроса
 	  xhr.setRequestHeader('val', msg_val);
 	  xhr.setRequestHeader('url', url);
 	  xhr.send(); // отправляем запрос на сервер
@@ -322,10 +319,10 @@ var objDiv = document.getElementById("sohbet");
 var str_url = window.location.href;
 var arr_url = str_url.split('/');
 var url = arr_url[arr_url.length - 1];
-
+var last_data = null;
 	function check_online() {
 	  let xhrs = new XMLHttpRequest(); // инициализируем переменную новым объектом XMLHttpRequest
-	  xhrs.open("GET", "http://127.0.0.1:8000/check_online/"+url); // определяем параметры для запроса
+	  xhrs.open("GET", "/check_online/"+url); // определяем параметры для запроса
 	  xhrs.send(); // отправляем запрос на сервер
 
 	  xhrs.onreadystatechange = function() {
@@ -334,17 +331,19 @@ var url = arr_url[arr_url.length - 1];
 	      const data = JSON.parse(this.responseText); // анализируем строку в формате JSON и инициализируем переменную значением, полученным в ходе анализа
 		  document.getElementById("users_head").innerHTML = ' ';
 			for(var i=0; i<data.length; i++){
-				if (data[i].is_online == true){
-				document.getElementById("users_head").innerHTML += "<span style='color: #0dba3b;'>"+data[i].username+"&nbsp &nbsp </span>";
-				}else{
+				if ((data[i].is_online == false) && (last_data != null) && (last_data[i].is_online == false)){
 				document.getElementById("users_head").innerHTML += "<span style='color: #bababa;'>"+data[i].username+"&nbsp &nbsp </span>";
+				}else{
+				document.getElementById("users_head").innerHTML += "<span style='color: #0dba3b;'>"+data[i].username+"&nbsp &nbsp </span>";
 				}
 			}
+			alert
+			last_data = data;
 	    }
 	  };
 	}
  check_online();
- setInterval(check_online, 3000);
+ setInterval(check_online, 5000);
 
 
 </script>

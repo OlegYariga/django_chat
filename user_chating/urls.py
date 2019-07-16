@@ -14,4 +14,6 @@ urlpatterns = [
     path('add_users/<url>', views.add_users, name='add_users'),
     path('check_online/<url>', views.check_online, name='check_online'),
     path('edit_userinfo', views.edit_userinfo, name='edit_userinfo'),
+    path('open_access_to_chat/<url>', views.open_access_to_chat, name='open_access_to_chat'),
+    path('get_access_to_chat/<url>', views.get_access_to_chat, name='get_access_to_chat'),
 ]

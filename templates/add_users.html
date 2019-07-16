@@ -19,12 +19,77 @@ width: 100%;
 
 </style>
 <body>
+<script>
+    var HOSTING = "http://127.0.0.1:8000/";
+
+
+    function open_access_to_chat(n){
+    //n +=1;
+    if (n == 1){
+    document.getElementById("open_access").innerHTML = '<button style="height: 50px;" onclick="open_access_to_chat(2)" \
+    class="btn btn-outline-secondary btn-block" type="button">Скопировать ссылку</button> \
+    <button style="height: 50px;" onclick="open_access_to_chat(3)" \
+    class="btn btn-outline-secondary btn-block" type="button">Закрыть доступ</button> \
+    <div class="input-group mb-3"> \
+        <input name="open_access_chat" disabled id="open_access_chat" type="text" class="form-control" placeholder="Введите логин пользователя" aria-label="Логин пользователя" aria-describedby="basic-addon2" value="'+HOSTING+"get_access_to_chat/"+"{{url}}"+'"> \
+        <div class="input-group-append"> \
+        </div> \
+    </div>';
+
+    //обращение по эндпоинту для открытия доступа
+        var open_a = HOSTING+"open_access_to_chat/"+"{{url}}";
+         var params = 'open=1';
+      let xhrs = new XMLHttpRequest(); // инициализируем переменную новым объектом XMLHttpRequest
+	  xhrs.open("GET", open_a); // определяем параметры для запроса
+	  xhrs.setRequestHeader('open', '1');
+	  xhrs.send(); // отправляем запрос на сервер
+
+	  xhrs.onreadystatechange = function() {
+	    // проверяем состояние запроса и числовой код состояния HTTP ответа
+	    if (this.readyState == 4 && this.status == 200) {
+	    }
+	  };
+
+
+    }
+    if (n == 2){
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!ДОДЕЛАТЬ КОПИРОВАНИЕ!!!!!!!!!!!!!!!!!!
+        alert("Ссылка была скопирована в буфер. Теперь Вы можете отправить её друзьям. \n\n"+document.getElementById("open_access_chat").value);
+    }
+    if (n == 3){
+    document.getElementById("open_access").innerHTML = '<button onclick="open_access_to_chat(1)" class="btn btn-outline-secondary btn-block" type="button">Открыть доступ по ссылке</button>';
+
+    //обращение по эндпоинту для закрытия доступа
+
+    var open_a = HOSTING+"open_access_to_chat/"+"{{url}}";
+      let xhrs = new XMLHttpRequest(); // инициализируем переменную новым объектом XMLHttpRequest
+	  xhrs.open("GET", open_a); // определяем параметры для запроса
+	  xhrs.setRequestHeader('open', '0');
+	  xhrs.send(); // отправляем запрос на сервер
+
+	  xhrs.onreadystatechange = function() {
+	    // проверяем состояние запроса и числовой код состояния HTTP ответа
+	    if (this.readyState == 4 && this.status == 200) {
+	    }
+	  };
+    }
+    }
+</script>
 <br/>
 <br/>
 <div class="container">
 <form method="POST">
      {% csrf_token %}
   <div class="form-group" id="parent_field">
+      <div id="open_access">
+          {% if status == 3 %}
+          <script>open_access_to_chat(3);</script>
+            {% else %}
+        <script>open_access_to_chat(1);</script>
+          {% endif %}
+      </div>
+          <br/>
+      <br/>
     <div class="input-group mb-3">
         <input name="user1" id="user1" type="text" class="form-control" placeholder="Введите логин пользователя" aria-label="Логин пользователя" aria-describedby="basic-addon2">
         <div class="input-group-append">
@@ -47,6 +112,7 @@ var num = 1;
     </div>';
     }
     }
+
 </script>
 
 </body>

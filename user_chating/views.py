@@ -197,7 +197,12 @@ def add_users(request, url):
                 chat.users.add(db_user)
         chat.save()
         return redirect('../lk/'+url)
-    return render(request, 'add_users.html', context={})
+    if chat.is_opened:
+        status = 1
+    else:
+        status = 3
+    print(status)
+    return render(request, 'add_users.html', context={"url": url, "status": status})
 
 
 @login_required
@@ -247,6 +252,119 @@ def edit_userinfo(request):
         #return redirect('../')
     return render(request, 'edit_userinfo.html', context={"user": user})
 
+
+@login_required
+def open_access_to_chat(request, url):
+    auth = UsersAuth.objects.filter(token=request.COOKIES['token']).first()
+    user = Users.objects.filter(username=auth.username).first()
+    chat = Chats.objects.filter(users=user, url=url).first()
+    if not chat:
+        return HttpResponse('not ok')
+    if request.headers['open'] == '0':
+        chat.is_opened = False
+        chat.save()
+        return HttpResponse('Chat closed')
+    else:
+        chat.is_opened = True
+        chat.save()
+        return HttpResponse('Chat opened')
+
+
+def get_access_to_chat(request, url):
+
+    if request.method == 'POST':
+        if request.POST['token'] == '1':
+            username = request.POST['username']
+            password = request.POST['password']
+            user = Users.objects.filter(username=username, password=password)
+            if user:
+                print("Нашел юзера!")
+                token = uuid4()
+                usr = UsersAuth(username=username, token=token)
+                usr.save()
+
+                user = Users.objects.filter(username=usr.username).first()
+                chat = Chats.objects.filter(url=url).first()
+                if not chat:
+                    return render(request, 'get_access_to_chat.html', context={'msg': "Такого чата не существует!",
+                                                                               'status': 1})
+                if not chat.is_opened:
+                    return render(request, 'get_access_to_chat.html',
+                                  context={'msg': "Доступ к чату закрыт. Попросите владельца "
+                                                  "чата открыть доступ или добавить Вас вручную.",
+                                           'status': 2})
+                chat.users.add(user)
+                chat.save()
+
+                response = render(request, 'get_access_to_chat.html',
+                                  context={'msg': "Вы были успешно добавлены в чат . \n"
+                                                  "Теперь Вы можете перейти на главную страницу.",
+                                           'status': 3})
+                print(token)
+                response.set_cookie(key='token', value=token, max_age=5184000)
+                return response
+            return render(request, 'get_access_to_chat.html', {'msg': ["Неверное имя пользователя или пароль!"]})
+        else:
+            username = request.POST['username']
+            password = request.POST['password']
+            #firstname = request.POST['firstname']
+            #secondname = request.POST['secondname']
+            email = request.POST['email']
+            if Users.objects.filter(username=username).exists():
+                return render(request, 'get_access_to_chat.html', {'msg': ['Такой пользователь уже существует. Пожалуйста, авторизируйтесь!']})
+            user = Users(username=username, email=email, password=password)
+            user.save()
+            if user:
+                token = uuid4()
+                usr = UsersAuth(username=username, token=token)
+                usr.save()
+                user = Users.objects.filter(username=usr.username).first()
+                chat = Chats.objects.filter(url=url).first()
+                if not chat:
+                    return render(request, 'get_access_to_chat.html', context={'msg': "Такого чата не существует!",
+                                                                               'status': 1})
+                if not chat.is_opened:
+                    return render(request, 'get_access_to_chat.html',
+                                  context={'msg': "Доступ к чату закрыт. Попросите владельца "
+                                                  "чата открыть доступ или добавить Вас вручную.",
+                                           'status': 2})
+                chat.users.add(user)
+                chat.save()
+                #token = usr.login(username=username)
+                response = render(request, 'get_access_to_chat.html',
+                                  context={'msg': "Вы были успешно добавлены в чат . \n"
+                                                  "Теперь Вы можете перейти на главную страницу.",
+                                           'status': 3})
+                print(token)
+                response.set_cookie(key='token', value=token, max_age=5184000)
+                return response
+
+    # ------------------------////---------------------------------------------------
+
+
+
+    auth = None
+    if 'token' in request.COOKIES:
+        auth = UsersAuth.objects.filter(token=request.COOKIES['token']).first()
+    if not auth:
+        return render(request, 'get_access_to_chat.html', context={'msg': "Вам необходимо зарегистрироваться "
+                                                                          "либо авторизироваться!",
+                                                                   'status': 0})
+
+    user = Users.objects.filter(username=auth.username).first()
+    chat = Chats.objects.filter(url=url).first()
+    if not chat:
+        return render(request, 'get_access_to_chat.html', context={'msg': "Такого чата не существует!",
+                                                                   'status': 1})
+    if not chat.is_opened:
+        return render(request, 'get_access_to_chat.html', context={'msg': "Доступ к чату закрыт. Попросите владельца "
+                                                                          "чата открыть доступ или добавить Вас вручную.",
+                                                                   'status': 2})
+    chat.users.add(user)
+    chat.save()
+    return render(request, 'get_access_to_chat.html', context={'msg': "Вы были успешно добавлены в чат "+chat.title+". "
+                                                                      "Теперь Вы можете перейти на главную страницу.",
+                                                               'status': 3})
 
 
 def dis_online_users():
