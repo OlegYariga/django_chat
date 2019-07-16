@@ -140,10 +140,33 @@ position:abcolute;
 bottom: 20px;
 
 }
+
+.del_btn{
+border-radius: 50%;
+
+}
 </style>
 <body>
 
 				  <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+
+				  <script>
+function del_message(id){
+	  //alert("Удалено сообщение"+id);
+	  const xml = new XMLHttpRequest(); // инициализируем переменную новым объектом XMLHttpRequest
+	  xml.open("GET", "/delete_message/"); // определяем параметры для запроса
+	  xml.setRequestHeader('messageIdentifier', id);
+	  xml.send(); // отправляем запрос на сервер
+
+	  xml.onreadystatechange = function() {
+	    // проверяем состояние запроса и числовой код состояния HTTP ответа
+	    if (this.readyState == 4 && this.status == 200) {
+	    	document.getElementById(id).innerHTML = "<div class='float-right'> Сообщение удалено </div>";
+	    }
+	  }
+}
+
+				  </script>
 <div class="jumbotron m-0 p-0 bg-transparent">
 		<div class="row m-0 p-0 position-relative">
 		  <div class="col-12 p-0 m-0 position-absolute" style="right: 0px;">
@@ -186,11 +209,15 @@ bottom: 20px;
 				  <script>
 					  start_id = {{message.id}};
 				  </script>
-				<div class="{% if message.username == me %} balon1 {% else %} balon2 {% endif %} p-2 m-0 position-relative"
+				<div id="{{message.id}}" class="{% if message.username == me %} balon1 {% else %} balon2 {% endif %} p-2 m-0 position-relative"
 					 data-is="{{message.username}}">
-
+					{% if message.username == me %}
+					<button onclick="del_message({{message.id}});" class="float-right del_btn" style="height: 100%;" name="{{message.id}}">&#9997;
+					</button>
+					{% endif %}
 					<a class="{% if message.username == me %} float-right {% else %} float-left sohbet2 {% endif %}">
 						{{message.message}} </a>
+
 
 				</div>
 				{% endfor %}
@@ -230,6 +257,7 @@ bottom: 20px;
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4" crossorigin="anonymous"></script>
 
 <script>
+
 var msg_val = 0;
 if (start_id > 0){
 	msg_val = start_id;
@@ -256,20 +284,22 @@ var objDiv = document.getElementById("sohbet");
 		  var me = data.me
 		  var message = data.message
 		  var pos;
+		  var is_btn;
 
 		  if (username == me){
 		  	stl = "balon1 p-2 m-0 position-relative";
 		  	pos = "float-right";
+		  	is_btn = '<button onclick="del_message('+data['msg_val']+');" class="float-right del_btn" style="height: 100%;" id="'+data['msg_val']+'", name="'+data['msg_val']+'">Y</button>'
 		  }else{
 		  	stl = "balon2 p-2 m-0 position-relative";
 		  	pos = "float-left sohbet2";
+		  	is_btn = ''
 		  }
 
-
-
 	      document.getElementById("sohbet").innerHTML += "<div \
+	      id='"+data['msg_val']+"' \
 	      class='"+stl+"' \
-	      data-is='"+username+"'> \
+	      data-is='"+username+"'> "+is_btn+"\
 	      <a class='"+pos+"'>"+message+"</a>\
 	      </div>"; // находим элемент по id и изменяем его содержимое значением ключа объекта, содержащегося в переменной
 

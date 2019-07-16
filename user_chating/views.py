@@ -378,6 +378,15 @@ def get_access_to_chat(request, url):
                                                                'status': 3})
 
 
+@csrf_exempt
+@login_required
+def delete_message(request):
+    if 'messageIdentifier' in request.headers:
+        Messages.objects.filter(id=int(request.headers['messageIdentifier'])).delete()
+        print("Объект удален!")
+    return HttpResponse(True)
+
+
 def dis_online_users():
     date_time_now = datetime.datetime.utcnow()
     users = Users.objects.filter(when_online__lt=date_time_now, is_online=True)

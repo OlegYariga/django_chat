@@ -16,4 +16,5 @@ urlpatterns = [
     path('edit_userinfo', views.edit_userinfo, name='edit_userinfo'),
     path('open_access_to_chat/<url>', views.open_access_to_chat, name='open_access_to_chat'),
     path('get_access_to_chat/<url>', views.get_access_to_chat, name='get_access_to_chat'),
+    path('delete_message/', views.delete_message, name='delete_message'),
 ]
