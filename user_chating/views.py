@@ -77,7 +77,7 @@ def login_required(func):
 def lk(request):
     auth = UsersAuth.objects.filter(token=request.COOKIES['token']).first()
     user = Users.objects.filter(username=auth.username).first()
-    chats = Chats.objects.filter(users=user)
+    chats = Chats.objects.filter(users=user).order_by('id')
     render_chats_arr = []
     for index, chat in enumerate(chats):
         render_chat = {}
@@ -386,6 +386,28 @@ def delete_message(request):
         print("Объект удален!")
     return HttpResponse(True)
 
+
+def forgot_password(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        email = request.POST['email']
+        user = Users.objects.filter(username=username, email=email).first()
+        if not user:
+            return render(request, 'forgot_password.html', context={'status': 2})
+        new_pasw = random.randint(10000, 99999)
+        user.password = new_pasw
+        send_mail(email, "Link. Password recovery", new_pasw)
+        user.save()
+        return render(request, 'forgot_password.html', context={'status': 1})
+    return render(request, 'forgot_password.html', context={'status': 0})
+    pass
+
+
+def send_mail(to, header, mail):
+    #
+    #Доделать отправку сообщения
+    #
+    pass
 
 def dis_online_users():
     date_time_now = datetime.datetime.utcnow()
