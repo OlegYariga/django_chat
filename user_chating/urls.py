@@ -18,4 +18,6 @@ urlpatterns = [
     path('get_access_to_chat/<url>', views.get_access_to_chat, name='get_access_to_chat'),
     path('delete_message/', views.delete_message, name='delete_message'),
     path('forgot_password/', views.forgot_password, name='forgot_password'),
+    path('get_delete_message/', views.get_delete_message, name='get_delete_message'),
+    path('help/', views.help, name='help'),
 ]

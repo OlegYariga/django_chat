@@ -685,6 +685,10 @@ a {
   }
 }
 
+.chat_title{
+font-size: 20px;
+color: red;
+}
   </style>
   <body>
 
@@ -695,7 +699,7 @@ a {
     <div class="masonry">
       {% for chat in chats %}
       <div class="brick" onClick="window.location.href='{{chat.url}}'" style=" cursor:pointer;">
-        <span>{{chat.name}}</span>
+        <span class="chat_title">{{chat.name}}</span>
         <img src="{% static chat.index %}" alt="Cherry plant" title="{{chat.name}}">
       </div>
       {% endfor %}

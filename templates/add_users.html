@@ -41,7 +41,7 @@ width: 100%;
     </div>';
 
     //обращение по эндпоинту для открытия доступа
-        var open_a = HOSTING+"open_access_to_chat/"+"{{url}}";
+        var open_a = "/open_access_to_chat/"+"{{url}}";
          var params = 'open=1';
       let xhrs = new XMLHttpRequest(); // инициализируем переменную новым объектом XMLHttpRequest
 	  xhrs.open("GET", open_a); // определяем параметры для запроса
@@ -57,15 +57,22 @@ width: 100%;
 
     }
     if (n == 2){
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!ДОДЕЛАТЬ КОПИРОВАНИЕ!!!!!!!!!!!!!!!!!!
-        alert("Ссылка была скопирована в буфер. Теперь Вы можете отправить её друзьям. \n\n"+document.getElementById("open_access_chat").value);
-    }
+    navigator.clipboard.writeText(document.getElementById("open_access_chat").value)
+        .then(() => {
+           alert("Ссылка была скопирована в буфер. Теперь Вы можете отправить её друзьям. \n\n"+document.getElementById("open_access_chat").value);
+
+    })
+        .catch(err => {
+            alert("Произошла ошибка. Пожалуйста, скопируйте ссылку вручную. \n\n"+document.getElementById("open_access_chat").value);
+
+    });
+        }
     if (n == 3){
     document.getElementById("open_access").innerHTML = '<button onclick="open_access_to_chat(1)" class="btn btn-outline-secondary btn-block" type="button">Открыть доступ по ссылке</button>';
 
     //обращение по эндпоинту для закрытия доступа
 
-    var open_a = HOSTING+"open_access_to_chat/"+"{{url}}";
+    var open_a = "/open_access_to_chat/"+"{{url}}";
       let xhrs = new XMLHttpRequest(); // инициализируем переменную новым объектом XMLHttpRequest
 	  xhrs.open("GET", open_a); // определяем параметры для запроса
 	  xhrs.setRequestHeader('open', '0');

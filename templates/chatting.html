@@ -145,6 +145,31 @@ bottom: 20px;
 border-radius: 50%;
 
 }
+
+.close{
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    font-size: 10px;
+    color: grey;
+}
+.close:hover{
+	width: 20px;
+    height: 20px;
+    cursor: pointer;
+    font-size: 20px;
+    color:red;
+}
+.close:before,
+.close:after {
+    content: "";
+    width: 5px;
+    height: 4px;
+    background: #e62f57;
+    font-size: 20px;
+    color: red;
+}
+
 </style>
 <body>
 
@@ -154,7 +179,7 @@ border-radius: 50%;
 function del_message(id){
 	  //alert("Удалено сообщение"+id);
 	  const xml = new XMLHttpRequest(); // инициализируем переменную новым объектом XMLHttpRequest
-	  xml.open("GET", "/delete_message/"); // определяем параметры для запроса
+	  xml.open("POST", "/delete_message/"); // определяем параметры для запроса
 	  xml.setRequestHeader('messageIdentifier', id);
 	  xml.send(); // отправляем запрос на сервер
 
@@ -170,11 +195,14 @@ function del_message(id){
 <div class="jumbotron m-0 p-0 bg-transparent">
 		<div class="row m-0 p-0 position-relative">
 		  <div class="col-12 p-0 m-0 position-absolute" style="right: 0px;">
-			<div class="card border-0 rounded" style="box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.10), 0 6px 10px 0 rgba(0, 0, 0, 0.01); overflow: hidden; height: 100vh;">
+			<div class="card border-0 rounded" style="box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.10), 0 6px 10px 0 rgba(0, 0, 0, 0.01); overflow: hidden; height: 100%;">
 
 			  <div class="card-header p-1 bg-light border border-top-0 border-left-0 border-right-0" style="color: rgba(96, 125, 139,1.0);">
 
-				<h6 class="float-left" style="margin: 0px; margin-left: 10px;">Пользователи: &nbsp &nbsp
+				<h6 class="float-left" style="margin: 0px; margin-left: 10px;">
+					Чат: &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp <span style="color: red;">{{chat}}</span>
+					<br/>
+					Пользователи: &nbsp &nbsp
 					<span id="users_head">
 
 					</span>
@@ -182,6 +210,7 @@ function del_message(id){
                     <i class="fa fa-check text-primary" title="Onaylanmış Hesap!" aria-hidden="true"></i> </br><small> </small></h6>
 
 				  <div class="float-right">
+
 					<button class="btn btn-outline-secondary" onclick='location.href="../add_users/"+url'>Добавить пользователей в чат</button>
 				  </div>
 				  <div class="dropdown show">
@@ -199,8 +228,8 @@ function del_message(id){
 
 			  </div>
 
-				<div class="card bg-sohbet border-0 m-0 p-0" style="height: 100vh;">
-			  <div id="sohbet" class="card border-0 m-0 p-0 position-relative bg-transparent" style="overflow-y: auto; height: 90%;">
+				<div class="card bg-sohbet border-0 m-0 p-0" style="height: 70vh;">
+			  <div id="sohbet" class="card border-0 m-0 p-0 position-relative bg-transparent" style="overflow-y: auto; height: 70vh;">
 				<script>
 					var start_id = 0;
 				</script>
@@ -212,7 +241,7 @@ function del_message(id){
 				<div id="{{message.id}}" class="{% if message.username == me %} balon1 {% else %} balon2 {% endif %} p-2 m-0 position-relative"
 					 data-is="{{message.username}}">
 					{% if message.username == me %}
-					<button onclick="del_message({{message.id}});" class="float-right del_btn" style="height: 100%;" name="{{message.id}}">&#9997;
+					<button onclick="del_message({{message.id}});" class="float-right close" name="{{message.id}}">X
 					</button>
 					{% endif %}
 					<a class="{% if message.username == me %} float-right {% else %} float-left sohbet2 {% endif %}">
@@ -226,13 +255,13 @@ function del_message(id){
 				  <br/>
 
 			  </div>
-			  </div>
 
-			<form method="POST" class="forma" name="ajax_form" id="ajax_form" action="">
+			  </div>
+				<form method="POST" class="forma" name="ajax_form" id="ajax_form" action="">
 				  {% csrf_token %}
 				  <div class="input-container">
 					  <div class="input-group mb-3">
-						  <textarea id="textAr" name="msg" style="min-height:50px; max-height:150px;" type="text" class="form-control" placeholder="Введите Ваше сообщение" aria-label="Recipient's username" aria-describedby="button-addon2"></textarea>
+						  <textarea id="textAr" name="msg" style="height: 50px; min-height:50px; max-height:150px;" type="text" class="form-control" placeholder="Введите Ваше сообщение" aria-label="Recipient's username" aria-describedby="button-addon2"></textarea>
 						  <div class="input-group-append">
 							  <button name="submit" id="submit" type="button"  class="btn btn-outline-secondary" onclick='sendMsg()'>Отправить</button>
 						  </div>
@@ -240,16 +269,14 @@ function del_message(id){
 				  </div>
 
 			  </form>
-			</div>
-
-
+				</div>
 		  </div>
-
 		</div>
-
 	  </div>
+<script>
+window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight);
 
-<script>window.scrollTo(0,document.body.scrollHeight);</script>
+</script>
 <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
@@ -257,6 +284,7 @@ function del_message(id){
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4" crossorigin="anonymous"></script>
 
 <script>
+window.scrollTo(0,document.body.scrollHeight);
 
 var msg_val = 0;
 if (start_id > 0){
@@ -289,7 +317,7 @@ var objDiv = document.getElementById("sohbet");
 		  if (username == me){
 		  	stl = "balon1 p-2 m-0 position-relative";
 		  	pos = "float-right";
-		  	is_btn = '<button onclick="del_message('+data['msg_val']+');" class="float-right del_btn" style="height: 100%;" id="'+data['msg_val']+'", name="'+data['msg_val']+'">Y</button>'
+		  	is_btn = '<button onclick="del_message('+data['msg_val']+');" class="float-right close" id="'+data['msg_val']+'", name="'+data['msg_val']+'">X</button>'
 		  }else{
 		  	stl = "balon2 p-2 m-0 position-relative";
 		  	pos = "float-left sohbet2";
@@ -313,6 +341,20 @@ var objDiv = document.getElementById("sohbet");
 	}
 
  setInterval(getMsg, 1000);
+
+ //
+ //
+ //
+ //
+ //
+ //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ //
+ //
+ //
+
+
+
+
 </script>
 <script>
     function sendMsg() {
@@ -350,6 +392,8 @@ var str_url = window.location.href;
 var arr_url = str_url.split('/');
 var url = arr_url[arr_url.length - 1];
 var last_data = null;
+var online_users = null;
+
 	function check_online() {
 	  let xhrs = new XMLHttpRequest(); // инициализируем переменную новым объектом XMLHttpRequest
 	  xhrs.open("GET", "/check_online/"+url); // определяем параметры для запроса
@@ -362,6 +406,7 @@ var last_data = null;
 		  document.getElementById("users_head").innerHTML = ' ';
 			for(var i=0; i<data.length; i++){
 				if ((data[i].is_online == false) && (last_data != null) && (last_data[i].is_online == false)){
+				online_users = data;
 				document.getElementById("users_head").innerHTML += "<span style='color: #bababa;'>"+data[i].username+"&nbsp &nbsp </span>";
 				}else{
 				document.getElementById("users_head").innerHTML += "<span style='color: #0dba3b;'>"+data[i].username+"&nbsp &nbsp </span>";
@@ -373,7 +418,47 @@ var last_data = null;
 	  };
 	}
  check_online();
- setInterval(check_online, 5000);
+ setInterval(check_online, 15000);
+//
+//
+//
+//
+//
+//
+//
+//
+function getDeletedMessage() {
+
+
+	  var usrs = JSON.stringify (online_users);
+	  //alert(usrs);
+	  var params = usrs;
+	  let xhr = new XMLHttpRequest(); // инициализируем переменную новым объектом XMLHttpRequest
+
+	  xhr.open("POST", "/get_delete_message/"); // определяем параметры для запроса
+	  xhr.setRequestHeader('url', url);
+	  xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+	  //xhr.setRequestHeader('post', online_users);
+	  xhr.send(params); // отправляем запрос на сервер
+
+	  xhr.onreadystatechange = function() {
+	    // проверяем состояние запроса и числовой код состояния HTTP ответа
+	    if (this.readyState == 4 && this.status == 200) {
+	      const data = JSON.parse(this.responseText); // анализируем строку в формате JSON и инициализируем переменную значением, полученным в ходе анализа
+		  for(var i=0; i<data.length; i++){
+		  if (data[i].username == data[i].me){
+		  	if (document.getElementById(data[i].id) != null) document.getElementById(data[i].id).innerHTML = "<div class='float-right'> Сообщение удалено </div>";
+		  }else{
+		  if (document.getElementById(data[i].id) != null) document.getElementById(data[i].id).innerHTML = "<div class='float-left'> Сообщение удалено </div>";
+
+		  }
+		  }
+	    }
+	  };
+	}
+
+ setInterval(getDeletedMessage, 15000);
+
 
 
 </script>

@@ -7,13 +7,15 @@ from django.shortcuts import redirect
 from django.shortcuts import render
 from django.http import HttpResponse
 import email
-from .models import Users, UsersAuth, is_authorized, Chats, Messages
+from .models import Users, UsersAuth, is_authorized, Chats, Messages, DeletedMessages
 import json
 import random
 from django.views.decorators.csrf import csrf_exempt
 import datetime
 from background_task import background
 from apscheduler.schedulers.background import BackgroundScheduler
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 # Create your views here.
@@ -140,6 +142,7 @@ def chatting(request, url):
         new_msg.save()
         new_msg.chats.add(chat)
         new_msg.save()
+        return HttpResponse('true')
 
     if not chat:
         return redirect('../')
@@ -151,7 +154,7 @@ def chatting(request, url):
     for u in users_in_chat:
         users.append(u.username)
 
-    return render(request, 'chatting.html', context={"messages": messages, "users": users, "me": me})
+    return render(request, 'chatting.html', context={"chat": chat, "messages": messages, "users": users, "me": me})
 
 
 @login_required
@@ -381,10 +384,78 @@ def get_access_to_chat(request, url):
 @csrf_exempt
 @login_required
 def delete_message(request):
-    if 'messageIdentifier' in request.headers:
-        Messages.objects.filter(id=int(request.headers['messageIdentifier'])).delete()
-        print("Объект удален!")
+    if request.method == 'POST':
+        if 'messageIdentifier' in request.headers:
+            msg = Messages.objects.filter(id=int(request.headers['messageIdentifier'])).first()
+            if msg:
+                deleted_msg = DeletedMessages(id=msg.id, username=msg.username, message=msg.message, senddate=msg.senddate)
+                deleted_msg.save()
+                chats = msg.chats.all()
+                for chat in chats:
+                    deleted_msg.chats.add(chat)
+                deleted_msg.save()
+            Messages.objects.filter(id=int(request.headers['messageIdentifier'])).delete()
+            return HttpResponse(True)
     return HttpResponse(True)
+
+
+@csrf_exempt
+@login_required
+def get_delete_message(request):
+    if request.method == 'POST':
+        auth = UsersAuth.objects.filter(token=request.COOKIES['token']).first()
+        chats = Chats.objects.filter(url=request.headers['url']).first()
+        deleted_msg = DeletedMessages.objects.filter(chats=chats)
+        data = []
+        for msg in deleted_msg:
+            identifier = {}
+            identifier['id'] = msg.id
+            identifier['username'] = msg.username
+            identifier['me'] = auth.username
+            data.append(identifier)
+        return HttpResponse(json.dumps(data))
+
+
+def help(request):
+    auth = UsersAuth.objects.filter(token=request.COOKIES['token']).first()
+    if request.method == 'POST':
+        email = request.POST['email']
+        message = request.POST['message']
+        username = None
+        if auth:
+            username = auth.username
+        send_email([settings.EMAIL_HOST_USER, ], email, str(username)+" Сообщение: "+str(message))
+        return redirect("../")
+    if not auth:
+        return render(request, 'help.html')
+    user = Users.objects.filter(username=auth.username).first()
+    if not user:
+        return render(request, 'help.html')
+    return render(request, 'help.html', context={'username': user.username, 'email': user.email})
+#
+#
+#ГОТОВАЯ ФУНКЦИЯ ДЛЯ ОТПРАВКИ СООБЩЕНИЯ ПОЛЬЗОВАТЕЛЯМ, КОТОРЫЕ НЕ ОНЛАЙН
+#
+#
+@csrf_exempt
+@login_required
+def send_vk_message(request):
+    if request.method == 'POST':
+        jsObject = request.POST
+        data = []
+        for J in jsObject:
+            j = json.loads(J)
+            if not (j is None):
+                for elem in j:
+                    identifier = {}
+                    chats = Chats.objects.filter(url=request.headers['url']).first()
+                    deleted_msg = DeletedMessages.objects.filter(chats=chats).first()
+                    if deleted_msg:
+                        print(deleted_msg)
+                    #print(elem['username'], elem['is_online'])
+
+        # Доделать обработку удаления сообщения!!!! Выдавать на клиент id удаленного сообщения
+        return HttpResponse(json.dumps(""))
 
 
 def forgot_password(request):
@@ -395,19 +466,39 @@ def forgot_password(request):
         if not user:
             return render(request, 'forgot_password.html', context={'status': 2})
         new_pasw = random.randint(10000, 99999)
+        new_list_email = []
+        new_list_email.append(email)
         user.password = new_pasw
-        send_mail(email, "Link. Password recovery", new_pasw)
+        msg_before = "Ваш новый пароль от Link - "
+        msg_after = ". Пожалуйста, авторизируйутесь и смените пароль в личном кабинете в " \
+                    "разделе 'Редактировать профиль'"
+        send_email(new_list_email, "Link. Password recovery", msg_before+str(new_pasw)+msg_after)
         user.save()
         return render(request, 'forgot_password.html', context={'status': 1})
     return render(request, 'forgot_password.html', context={'status': 0})
     pass
 
 
-def send_mail(to, header, mail):
-    #
-    #Доделать отправку сообщения
-    #
-    pass
+def send_email(to, header, mail):
+    send_mail(subject=str(header), message=str(mail), from_email=settings.EMAIL_HOST_USER, recipient_list=to)
+    return True
+#
+#
+# BackGround schedulers
+#
+#
+def delete_null_chats():
+    chats = Chats.objects.filter(users=None)
+    for chat in chats:
+        Messages.objects.filter(chats=chat).delete()
+    Chats.objects.filter(users=None).delete()
+    return True
+
+
+def remove_deleted_messages():
+    DeletedMessages.objects.all().delete()
+    return True
+
 
 def dis_online_users():
     date_time_now = datetime.datetime.utcnow()
@@ -420,7 +511,9 @@ def dis_online_users():
 
 def start_background():
     scheduler = BackgroundScheduler()
-    scheduler.add_job(dis_online_users, 'interval', seconds=20)
+    scheduler.add_job(dis_online_users, 'interval', seconds=60)
+    scheduler.add_job(remove_deleted_messages, 'interval', hours=48)
+    scheduler.add_job(delete_null_chats, 'interval', hours=48)
     scheduler.start()
 
 start_background()

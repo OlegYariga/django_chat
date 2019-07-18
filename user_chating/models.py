@@ -52,3 +52,11 @@ class Messages(models.Model):
     message = models.TextField()
     senddate = models.DateTimeField(default=datetime.utcnow())
     identifier = models.CharField(max_length=100, default=uuid4())
+
+
+class DeletedMessages(models.Model):
+    chats = models.ManyToManyField(Chats)
+    username = models.CharField(max_length=50)
+    message = models.TextField()
+    senddate = models.DateTimeField(default=datetime.utcnow())
+    identifier = models.CharField(max_length=100, default=uuid4())
