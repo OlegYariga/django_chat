@@ -12,7 +12,6 @@ import json
 import random
 from django.views.decorators.csrf import csrf_exempt
 import datetime
-from background_task import background
 from apscheduler.schedulers.background import BackgroundScheduler
 from django.core.mail import send_mail
 from django.conf import settings
