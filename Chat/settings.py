@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import django_heroku
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -79,9 +80,9 @@ DATABASES = {
     'default': {
     'ENGINE': 'django.db.backends.postgresql_psycopg2',
     'NAME': 'dc7lh3c6b7s69p',
-    'USER': 'postgres',
-    'PASSWORD': 'admin',
-    'HOST': '127.0.0.1', # Set to empty string for localhost.
+    'USER': 'lqdyuteyfswmgr',
+    'PASSWORD': '34ca8d1c45c78033beb5117c028c689ca4dad37ad110a7d92baaf0788c43edab',
+    'HOST': 'postgres://lqdyuteyfswmgr:34ca8d1c45c78033beb5117c028c689ca4dad37ad110a7d92baaf0788c43edab@ec2-174-129-29-101.compute-1.amazonaws.com:5432/dc7lh3c6b7s69p', # Set to empty string for localhost.
     'PORT': '5432', # Set to empty string for default.
     }
 }
@@ -139,3 +140,5 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'oyariga@gmail.com'
 EMAIL_HOST_PASSWORD = 'qwertyui1234'
 EMAIL_USE_TLS = True
+
+django_heroku.settings(locals())
