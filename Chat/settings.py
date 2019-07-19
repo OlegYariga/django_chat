@@ -25,7 +25,7 @@ SECRET_KEY = '7b0xwn22*z3&djxh@rk7)r)3!hvgbyg$@(okq+c%7)y9*58qrs'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['l-ink.herokuapp.com',]
+ALLOWED_HOSTS = ['l-ink.herokuapp.com', '127.0.0.1', ]
 
 
 # Application definition
@@ -79,12 +79,24 @@ DATABASES = {
     'default': {
     'ENGINE': 'django.db.backends.postgresql_psycopg2',
     'NAME': 'dc7lh3c6b7s69p',
+    'USER': 'postgres',
+    'PASSWORD': 'admin',
+    'HOST': '', # Set to empty string for localhost.
+    'PORT': '5432', # Set to empty string for default.
+    }
+}
+"""
+DATABASES = {
+    'default': {
+    'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    'NAME': 'dc7lh3c6b7s69p',
     'USER': 'lqdyuteyfswmgr',
     'PASSWORD': '34ca8d1c45c78033beb5117c028c689ca4dad37ad110a7d92baaf0788c43edab',
     'HOST': 'ec2-174-129-29-101.compute-1.amazonaws.com', # Set to empty string for localhost.
     'PORT': '5432', # Set to empty string for default.
     }
 }
+"""
 
 
 # Password validation
@@ -145,3 +157,4 @@ EMAIL_USE_TLS = True
 
 #  Add configuration for static files storage using whitenoise
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+
