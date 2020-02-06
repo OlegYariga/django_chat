@@ -17,6 +17,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.schedulers.blocking import BlockingScheduler
 from django.core.mail import send_mail
 from django.conf import settings
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 # Create your views here.
@@ -222,6 +223,7 @@ def check_online(request, url):
     user = Users.objects.filter(username=auth.username).first()
     user.is_online = True
     user.when_online = datetime.datetime.utcnow()
+    user.next_status_send = datetime.datetime.utcnow()+datetime.timedelta(seconds=60)
     user.save()
     chat = Chats.objects.filter(users=user, url=url).first()
     users_in_chat = chat.users.order_by('username').all()
@@ -485,11 +487,13 @@ def send_email(to, header, mail):
     return True
 #
 #
-# BackGround schedulers
+# BackgroundScheduler
 #
 #
+
+
 def delete_null_chats():
-    threading.Timer(172000, delete_null_chats).start()
+    #threading.Timer(172000, delete_null_chats).start()
     chats = Chats.objects.filter(users=None)
     for chat in chats:
         Messages.objects.filter(chats=chat).delete()
@@ -498,15 +502,15 @@ def delete_null_chats():
 
 
 def remove_deleted_messages():
-    threading.Timer(172000, remove_deleted_messages).start()
+    #threading.Timer(172000, remove_deleted_messages).start()
     DeletedMessages.objects.all().delete()
     return True
 
 
 def dis_online_users():
-    threading.Timer(33, dis_online_users).start()
+    #threading.Timer(33, dis_online_users).start()
     date_time_now = datetime.datetime.utcnow()
-    users = Users.objects.filter(when_online__lt=date_time_now, is_online=True).all()
+    users = Users.objects.filter(next_status_send__lt=date_time_now, is_online=True).all()
     if not users:
         print("ничего нет")
         return False
@@ -522,4 +526,9 @@ def start_background():
     remove_deleted_messages()
     delete_null_chats()
 
-start_background()
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(dis_online_users, 'interval', seconds=33)
+scheduler.add_job(remove_deleted_messages, 'interval', minutes=120)
+scheduler.add_job(delete_null_chats, 'interval', minutes=120)
+scheduler.start()

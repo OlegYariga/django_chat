@@ -282,8 +282,9 @@ window.scrollTo(0, document.body.scrollHeight || document.documentElement.scroll
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4" crossorigin="anonymous"></script>
-
+{% load staticfiles %}
 <script>
+
 window.scrollTo(0,document.body.scrollHeight);
 
 var msg_val = 0;
@@ -315,10 +316,16 @@ var objDiv = document.getElementById("sohbet");
 		  var is_btn;
 
 		  if (username == me){
+		  	var audio = new Audio(); // Создаём новый элемент Audio
+  			audio.src = '{% static "files/sentmessage.mp3" %}'; // Указываем путь к звуку "клика"
+  			audio.autoplay = true; // Автоматически запускаем
 		  	stl = "balon1 p-2 m-0 position-relative";
 		  	pos = "float-right";
 		  	is_btn = '<button onclick="del_message('+data['msg_val']+');" class="float-right close" id="'+data['msg_val']+'", name="'+data['msg_val']+'">X</button>'
 		  }else{
+		  	var audio = new Audio(); // Создаём новый элемент Audio
+  			audio.src = '{% static "files/receivedmessage.mp3" %}'; // Указываем путь к звуку "клика"
+  			audio.autoplay = true; // Автоматически запускаем
 		  	stl = "balon2 p-2 m-0 position-relative";
 		  	pos = "float-left sohbet2";
 		  	is_btn = ''

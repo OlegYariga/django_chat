@@ -12,6 +12,7 @@ class Users(models.Model):
     email = models.EmailField()
     password = models.CharField(max_length=50, default=None)
     last_login = models.DateTimeField(default=datetime.utcnow())
+    next_status_send = models.DateTimeField(default=datetime.utcnow())
     is_online = models.BooleanField(default=False)
     when_online = models.DateTimeField(default=datetime.utcnow())
 
