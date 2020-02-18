@@ -8,6 +8,8 @@
 
 
 </head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/sha256.js"></script>
 <style>
 body{
 
@@ -56,7 +58,7 @@ textarea:focus,
 
 
 .card::-webkit-scrollbar {
-    width: 1px;
+    width: 7px;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -136,8 +138,6 @@ width: 100%;
 }
 
 .forma{
-position:abcolute;
-bottom: 20px;
 
 }
 
@@ -170,12 +170,17 @@ border-radius: 50%;
     color: red;
 }
 
+   .text {
+    text-align:  center;
+   }
 </style>
 <body>
 
 				  <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
-
+{% load staticfiles %}
+				  <script type="text/javascript" src='{% static "files/hybrid-crypto.min.js" %}'></script>
 				  <script>
+
 function del_message(id){
 	  //alert("Удалено сообщение"+id);
 	  const xml = new XMLHttpRequest(); // инициализируем переменную новым объектом XMLHttpRequest
@@ -190,6 +195,150 @@ function del_message(id){
 	    }
 	  }
 }
+
+function supports_html5_storage() {
+  try {
+    return 'localStorage' in window && window['localStorage'] !== null;
+} catch (e) {
+    return false;
+  }
+}
+
+function getCookie(name) {
+	var cookie = " " + document.cookie;
+	var search = " " + name + "=";
+	var setStr = null;
+	var offset = 0;
+	var end = 0;
+	if (cookie.length > 0) {
+		offset = cookie.indexOf(search);
+		if (offset != -1) {
+			offset += search.length;
+			end = cookie.indexOf(";", offset)
+			if (end == -1) {
+				end = cookie.length;
+			}
+			setStr = unescape(cookie.substring(offset, end));
+		}
+	}
+	return(setStr);
+}
+
+function init_rsa_keypair(){
+
+var str_url_q = window.location.href;
+var arr_url_q = str_url_q.split('/');
+var url_q = arr_url_q[arr_url_q.length - 1];
+
+var message_aes_encryption_key = localStorage.getItem("message_aes_encryption_key"+url_q);
+
+	var data = new FormData();
+	data.append('message_aes_encryption_key', message_aes_encryption_key);
+
+	var xhr = new XMLHttpRequest();
+	xhr.open('POST', '/lk/get_aes_key/'+url_q, true);
+	xhr.onload = function () {
+
+		localStorage.setItem("message_aes_encryption_key"+url_q, this.responseText);
+		console.log(this.responseText);
+
+
+		var mes_enc_key = localStorage.getItem("message_aes_encryption_key"+url_q);
+		var text = "Read this text. Прочитайте этот текст. Знаки: !@#$%^&*()";
+
+		var key = CryptoJS.enc.Base64.parse(mes_enc_key);
+		var encrypted = CryptoJS.AES.encrypt(text, key, {iv: key});
+		console.log(encrypted.toString());
+
+		var decrypted = CryptoJS.AES.decrypt(encrypted, key, {iv: key});
+		console.log(decrypted.toString(CryptoJS.enc.Utf8));
+
+	};
+	xhr.send(data);
+	if (!(localStorage.getItem("message_aes_encryption_key"+url_q))){
+		alert("В данном чате поддерживается шифрование с помощью серктеного ключа. Если Вы видите значок 'Замок' в\
+ верхней части экрана, значит Ваши сообщения шифруются. Если значка нет, попробуйте перезагрузить страницу.");
+	}
+}
+/*
+function check_https(){
+	var protocol = window.location.protocol;
+	var loc = window.location;
+	console.log(protocol);
+	if (protocol == "https:"){
+		return true;
+	}else{
+	var xhr = new XMLHttpRequest();
+	var https_loc = ('https://'+document.location.host+document.location.pathname)
+	console.log(https_loc);
+	//alert(https_loc);
+	xhr.open('GET', https_loc, true);
+	xhr.setRequestHeader("Access-Control-Allow-Origin", "*")
+	xhr.setRequestHeader("origin", "*")
+	xhr.onload = function () {
+		if (this.readyState == 4 && this.status == 200) {
+			location = https_loc;
+			return true;
+		}else{
+			console.log(this.status);
+			alert("Шифрование будет отключено, так как не поддерживается протоколо https");
+			return false;
+		}
+	};
+	xhr.onerror = function(){
+		console.log("Зашел в onerror");
+		alert("Шифрование будет отключено, так как не поддерживается протоколо https");
+	};
+
+	xhr.send();
+	}
+}
+
+var https_checked = check_https();*/
+https_checked = true;
+if (https_checked){
+	init_rsa_keypair();
+}
+//init_rsa_keypair();
+/*Функция шифрования сообщений с помощью ключа*/
+function encrypt_message(text){
+	var str_url_q = window.location.href;
+	var arr_url_q = str_url_q.split('/');
+	var url_q = arr_url_q[arr_url_q.length - 1];
+	 var message_aes_encryption_key = localStorage.getItem("message_aes_encryption_key"+url_q);
+	 if (message_aes_encryption_key){
+	 	//alert("с шифром всё норм");
+		var key = CryptoJS.enc.Base64.parse(message_aes_encryption_key);
+		var encrypted = CryptoJS.AES.encrypt(text, key, {iv: key});
+		return encrypted;
+	 }else{
+	 	//alert("СООБЩЕНИЯ НЕ ШИФРУЮТСЯ!!!");
+	 	return text;
+	 }
+}
+
+
+function decrypt_message(encrypted){
+	var str_url_q = window.location.href;
+	var arr_url_q = str_url_q.split('/');
+	var url_q = arr_url_q[arr_url_q.length - 1];
+	 var message_aes_encryption_key = localStorage.getItem("message_aes_encryption_key"+url_q);
+	//console.log(message_aes_encryption_key);
+
+	 if (message_aes_encryption_key){
+	 	//alert("с шифром всё норм");
+		var key = CryptoJS.enc.Base64.parse(message_aes_encryption_key);
+		var decrypted = CryptoJS.AES.decrypt(encrypted, key, {iv: key});
+		var dev = decrypted.toString(CryptoJS.enc.Utf8)
+		return dev;
+	 }else{
+	 	//alert("СООБЩЕНИЯ НЕ ШИФРУЮТСЯ!!!");
+	 	return encrypted;
+	 }
+}
+
+
+
 
 				  </script>
 <div class="jumbotron m-0 p-0 bg-transparent">
@@ -209,8 +358,7 @@ function del_message(id){
 
                     <i class="fa fa-check text-primary" title="Onaylanmış Hesap!" aria-hidden="true"></i> </br><small> </small></h6>
 
-				  <div class="float-right">
-
+				  <div class="float-right" id="class_button_img">
 					<button class="btn btn-outline-secondary" onclick='location.href="../add_users/"+url'>Добавить пользователей в чат</button>
 				  </div>
 				  <div class="dropdown show">
@@ -233,19 +381,40 @@ function del_message(id){
 				<script>
 					var start_id = 0;
 				</script>
-
+				{% if limits_are_over %}
+				  	<div class="alert alert-info" role="alert">
+  						В бесплатной версии все сообщения старше 15 дней автоматически удаляются. Приобретите расширенную версию, чтобы получить неограниченный доступ к хранилищу.
+					</div>
+				  {% endif %}
 				{% for message in messages %}
 				  <script>
 					  start_id = {{message.id}};
 				  </script>
+					{% if message == msg_user_havent_seen_yet %}
+				  <p></p>
+				  <div class="text">
+     <p>Новые сообщения</p>
+  </div>
+				  						  <div style="height:20px;
+				  						  	width:100%;
+											border-top:1px solid #9EC1D4;
+											padding-left:5%
+											padding-right:5%">
+										  </div>
+				  	{% endif %}
+
 				<div id="{{message.id}}" class="{% if message.username == me %} balon1 {% else %} balon2 {% endif %} p-2 m-0 position-relative"
 					 data-is="{{message.username}}">
 					{% if message.username == me %}
 					<button onclick="del_message({{message.id}});" class="float-right close" name="{{message.id}}">X
 					</button>
 					{% endif %}
-					<a class="{% if message.username == me %} float-right {% else %} float-left sohbet2 {% endif %}">
-						{{message.message}} </a>
+					<a id="a{{message.id}}" class="{% if message.username == me %} float-right {% else %} float-left sohbet2 {% endif %}">
+						<script>
+						var decrypted = "{{message.message|safe}}";
+						var msg = decrypt_message(decrypted);
+						document.getElementById('a{{message.id}}').innerHTML = msg;
+					</script></a>
 
 
 				</div>
@@ -261,7 +430,7 @@ function del_message(id){
 				  {% csrf_token %}
 				  <div class="input-container">
 					  <div class="input-group mb-3">
-						  <textarea id="textAr" name="msg" style="height: 50px; min-height:50px; max-height:150px;" type="text" class="form-control" placeholder="Введите Ваше сообщение" aria-label="Recipient's username" aria-describedby="button-addon2"></textarea>
+						  <textarea id="textAr" name="msg" style="height: 50px; min-height:50px; max-height:150px;" type="text" class="form-control" placeholder="Введите Ваше сообщение. Полужирный текст: <strong>текст</strong>. Переход на новую строку: Shift+Enter" aria-label="Recipient's username" aria-describedby="button-addon2"></textarea>
 						  <div class="input-group-append">
 							  <button name="submit" id="submit" type="button"  class="btn btn-outline-secondary" onclick='sendMsg()'>Отправить</button>
 						  </div>
@@ -271,10 +440,23 @@ function del_message(id){
 			  </form>
 				</div>
 		  </div>
+
 		</div>
 	  </div>
 <script>
 window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight);
+
+var str_url_q = window.location.href;
+var arr_url_q = str_url_q.split('/');
+var url_q = arr_url_q[arr_url_q.length - 1];
+var message_aes_encryption_key = localStorage.getItem("message_aes_encryption_key"+url_q);
+if (message_aes_encryption_key){
+	let div = document.createElement('img');
+  	div.src = "https://img.icons8.com/ios/35/000000/lock.png";
+  	div.title = "Ваша переписка защищена";
+  	var div_prepender = document.getElementById("class_button_img");
+  	div_prepender.prepend(div);
+}
 
 </script>
 <!-- Optional JavaScript -->
@@ -311,7 +493,7 @@ var objDiv = document.getElementById("sohbet");
 		  var stl;
 		  var username = data.username
 		  var me = data.me
-		  var message = data.message
+		  var message = decrypt_message(data.message);
 		  var pos;
 		  var is_btn;
 
@@ -370,21 +552,30 @@ var objDiv = document.getElementById("sohbet");
         alert ("Сообщение не должно быть пустым!");
         return (false);
         }
-        var params = 'msg='+document.querySelector('#textAr').value;
+        var ready_text = document.querySelector('#textAr').value.replace(/(?:\r\n|\r|\n)/g, '<br/>');
+        var encrypted_text = encrypt_message(ready_text);
+        //alert(ready_text);
+        var params = 'msg='+encrypted_text;
+
+		var data = new FormData();
+		data.append('msg', encrypted_text);
+
 
         const http = new XMLHttpRequest();
         http.open('POST', '/lk/'+url);
-        http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        //http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
         //http.setRequestHeader('csrftoken', {% csrf_token %});
-        http.send(params) // Make sure to stringify
+        //http.send(params) // Make sure to stringify
         http.onload = function() {
+        	encrypt_message();
             document.getElementById('textAr').value='';
         }
+        http.send(data);
     }
 
     textAr.onkeydown = function(e){
   e = e || event;
-  if (e.keyCode === 13 && !e.ctrlKey) {
+  if (e.keyCode === 13 && !e.shiftKey) {
   	sendMsg();
   }
   return true;

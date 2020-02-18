@@ -1,4 +1,5 @@
 from uuid import uuid4
+from django.db import close_old_connections
 import threading
 from datetime import timedelta
 from django.contrib import auth
@@ -8,7 +9,7 @@ from django.shortcuts import redirect
 from django.shortcuts import render
 from django.http import HttpResponse
 import email
-from .models import Users, UsersAuth, is_authorized, Chats, Messages, DeletedMessages
+from .models import Users, UsersAuth, is_authorized, Chats, Messages, DeletedMessages, ChatsWithOverLimits
 import json
 import random
 from django.views.decorators.csrf import csrf_exempt
@@ -18,7 +19,11 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from django.core.mail import send_mail
 from django.conf import settings
 from apscheduler.schedulers.background import BackgroundScheduler
-
+import rsa
+import secrets
+from base64 import b64decode
+import urllib.parse
+import hashlib
 
 # Create your views here.
 def index(request):
@@ -28,7 +33,8 @@ def index(request):
     if request.method == 'POST':
         if request.POST['token'] == '1':
             username = request.POST['username']
-            password = request.POST['password']
+            password = hashlib.md5(request.POST['password'].encode('utf-8')).hexdigest()
+            print(password)
             user = Users.objects.filter(username=username, password=password)
             if user:
                 token = uuid4()
@@ -43,7 +49,7 @@ def index(request):
             return render(request, 'regform.html', {'msg': ["Неверное имя пользователя или пароль!"]})
         else:
             username = request.POST['username']
-            password = request.POST['password']
+            password = hashlib.md5(request.POST['password'].encode('utf-8')).hexdigest()
             #firstname = request.POST['firstname']
             #secondname = request.POST['secondname']
             email = request.POST['email']
@@ -140,7 +146,7 @@ def chatting(request, url):
     user = Users.objects.filter(username=auth.username).first()
     chat = Chats.objects.filter(users=user, url=url).first()
     if request.method == 'POST':
-        new_msg = Messages(username=user.username, message=request.POST['msg'])
+        new_msg = Messages(username=user.username, message=request.POST['msg'], senddate=datetime.datetime.utcnow())
         new_msg.save()
         new_msg.chats.add(chat)
         new_msg.save()
@@ -149,6 +155,13 @@ def chatting(request, url):
     if not chat:
         return redirect('../')
     messages = Messages.objects.filter(chats=chat).order_by('id')
+    CWOL = ChatsWithOverLimits.objects.filter(chat_url=chat.url).first()
+    #msg_user_havent_seen_yet = Messages.objects.filter(chats=chat, senddate__gt=user.when_online).first()
+    msg_user_havent_seen_yet = Messages.objects.filter(chats=chat).exclude(
+                                                    users_read_message__username=user.username).first()
+    limits_are_over = False
+    if CWOL:
+        limits_are_over = True
     #print(messages)
     me = user.username
     users = []
@@ -156,7 +169,9 @@ def chatting(request, url):
     for u in users_in_chat:
         users.append(u.username)
 
-    return render(request, 'chatting.html', context={"chat": chat, "messages": messages, "users": users, "me": me})
+    return render(request, 'chatting.html', context={"chat": chat, "messages": messages, "users": users, "me": me,
+                                                     "limits_are_over": limits_are_over,
+                                                     'msg_user_havent_seen_yet':msg_user_havent_seen_yet})
 
 
 @login_required
@@ -226,6 +241,10 @@ def check_online(request, url):
     user.next_status_send = datetime.datetime.utcnow()+datetime.timedelta(seconds=60)
     user.save()
     chat = Chats.objects.filter(users=user, url=url).first()
+    last_msg = Messages.objects.filter(chats=chat).exclude(users_read_message__username=user.username)
+    for message in last_msg:
+        message.users_read_message.add(user)
+        message.save()
     users_in_chat = chat.users.order_by('username').all()
     users = []
     for u in users_in_chat:
@@ -239,7 +258,7 @@ def edit_userinfo(request):
     user = Users.objects.filter(username=auth.username).first()
     if request.method == 'POST':
         username = request.POST['username']
-        password = request.POST['password']
+        password = hashlib.md5(request.POST['password'].encode('utf-8')).hexdigest()
         firstname = request.POST['firstname']
         secondname = request.POST['secondname']
         email = request.POST['email']
@@ -286,7 +305,7 @@ def get_access_to_chat(request, url):
     if request.method == 'POST':
         if request.POST['token'] == '1':
             username = request.POST['username']
-            password = request.POST['password']
+            password = hashlib.md5(request.POST['password'].encode('utf-8')).hexdigest()
             user = Users.objects.filter(username=username, password=password)
             if user:
                 print("Нашел юзера!")
@@ -320,7 +339,7 @@ def get_access_to_chat(request, url):
             return render(request, 'get_access_to_chat.html', {'msg': ["Неверное имя пользователя или пароль!"]})
         else:
             username = request.POST['username']
-            password = request.POST['password']
+            password = hashlib.md5(request.POST['password'].encode('utf-8')).hexdigest()
             #firstname = request.POST['firstname']
             #secondname = request.POST['secondname']
             email = request.POST['email']
@@ -471,7 +490,7 @@ def forgot_password(request):
         new_pasw = random.randint(10000, 99999)
         new_list_email = []
         new_list_email.append(email)
-        user.password = new_pasw
+        user.password = hashlib.md5(str(new_pasw).encode('utf-8')).hexdigest()
         msg_before = "Ваш новый пароль от Link - "
         msg_after = ". Пожалуйста, авторизируйутесь и смените пароль в личном кабинете в " \
                     "разделе 'Редактировать профиль'"
@@ -485,6 +504,65 @@ def forgot_password(request):
 def send_email(to, header, mail):
     send_mail(subject=str(header), message=str(mail), from_email=settings.EMAIL_HOST_USER, recipient_list=to)
     return True
+
+
+@csrf_exempt
+def check_new_messages(request):
+    result = "Новые непрочитанные сообщения в чатах: "
+    result_ids = "="
+    check = False
+    login = request.GET['login']
+    code = request.GET['code']
+    user = Users.objects.filter(username=login, code=code).first()
+    if not user:
+        http = HttpResponse('')
+        http.status_code = 401
+        return http
+    chats = Chats.objects.filter(users=user)
+    for chat in chats:
+        msg_user_havent_seen_yet = Messages.objects.filter(chats=chat).exclude(users_read_message__username=user.username).last()
+        print(msg_user_havent_seen_yet)
+        if msg_user_havent_seen_yet:
+            #if not msg_user_havent_seen_yet.users_read_message.filter(user).first():
+                check = True
+                result += chat.title+' '
+                result_ids += str(msg_user_havent_seen_yet.id)+' '
+    if check:
+        print(result+result_ids)
+        http = HttpResponse(result+result_ids)
+        http.status_code=200
+        return http
+    http = HttpResponse('')
+    http.status_code = 204
+    return http
+
+
+@csrf_exempt
+@login_required
+def get_aes_key(request, url):
+    auth = UsersAuth.objects.filter(token=request.COOKIES['token']).first()
+    user = Users.objects.filter(username=auth.username).first()
+    chat = Chats.objects.filter(users=user, url=url).first()
+    if request.method == 'POST':
+        if not chat.secret_key:
+            chat.secret_key = secrets.token_hex(256)
+            chat.save()
+            return HttpResponse(chat.secret_key)
+        return HttpResponse(chat.secret_key)
+    return HttpResponse('false')
+
+
+def additional(request):
+    auth = UsersAuth.objects.filter(token=request.COOKIES['token']).first()
+    if not auth:
+        return redirect("../")
+    user = Users.objects.filter(username=auth.username).first()
+    if not user:
+        return redirect("../")
+    if not user.code or int(user.code)<1000:
+        user.code = str(random.randint(1000, 9999))
+        user.save()
+    return render(request, 'additional.html', context={'username': None, 'code': user.code})
 #
 #
 # BackgroundScheduler
@@ -513,22 +591,32 @@ def dis_online_users():
     users = Users.objects.filter(next_status_send__lt=date_time_now, is_online=True).all()
     if not users:
         print("ничего нет")
-        return False
+        close_old_connections()
+        return True
     for user in users:
         user.is_online = False
         user.save()
     print("Выолнил")
-    return False
+    close_old_connections()
+    return True
 
 
-def start_background():
-    dis_online_users()
-    remove_deleted_messages()
-    delete_null_chats()
+def delete_ovelimited_messages():
+    chats = Chats.objects.all()
+    for chat in chats:
+        dt = datetime.datetime.utcnow()-datetime.timedelta(days=1)
+        ms = Messages.objects.filter(chats=chat, senddate__lt=dt).all()
+        for message in ms:
+            CWOL = ChatsWithOverLimits.objects.filter(chat_url=chat.url).first()
+            if not CWOL:
+                CWOL = ChatsWithOverLimits(chat_url=chat.url)
+                CWOL.save()
+        Messages.objects.filter(chats=chat, senddate__lt=dt).all().delete()
 
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(dis_online_users, 'interval', seconds=33)
 scheduler.add_job(remove_deleted_messages, 'interval', minutes=120)
 scheduler.add_job(delete_null_chats, 'interval', minutes=120)
+scheduler.add_job(delete_ovelimited_messages, 'interval', minutes=120)
 scheduler.start()

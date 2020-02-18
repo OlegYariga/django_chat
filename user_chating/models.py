@@ -11,6 +11,7 @@ class Users(models.Model):
     secondname = models.CharField(max_length=50)
     email = models.EmailField()
     password = models.CharField(max_length=50, default=None)
+    code = models.CharField(max_length=5, blank=True)
     last_login = models.DateTimeField(default=datetime.utcnow())
     next_status_send = models.DateTimeField(default=datetime.utcnow())
     is_online = models.BooleanField(default=False)
@@ -40,6 +41,7 @@ def is_authorized(token):
 class Chats(models.Model):
     users = models.ManyToManyField(Users)
     title = models.CharField(max_length=20)
+    secret_key = models.CharField(max_length=2048, blank=True)
     url = models.CharField(max_length=100, default=uuid4())
     is_opened = models.BooleanField(default=False)
 
@@ -49,6 +51,7 @@ class Chats(models.Model):
 
 class Messages(models.Model):
     chats = models.ManyToManyField(Chats)
+    users_read_message = models.ManyToManyField(Users)
     username = models.CharField(max_length=50)
     message = models.TextField()
     senddate = models.DateTimeField(default=datetime.utcnow())
@@ -61,3 +64,8 @@ class DeletedMessages(models.Model):
     message = models.TextField()
     senddate = models.DateTimeField(default=datetime.utcnow())
     identifier = models.CharField(max_length=100, default=uuid4())
+
+
+class ChatsWithOverLimits(models.Model):
+    chats = models.ManyToManyField(Chats)
+    chat_url = models.CharField(max_length=100, default=uuid4(), primary_key=True)

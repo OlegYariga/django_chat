@@ -20,4 +20,8 @@ urlpatterns = [
     path('forgot_password/', views.forgot_password, name='forgot_password'),
     path('get_delete_message/', views.get_delete_message, name='get_delete_message'),
     path('help/', views.help, name='help'),
+    path('check_new_messages/', views.check_new_messages, name='check_new_messages'),
+    path('additional/', views.additional, name='additional'),
+    path('lk/get_aes_key/<url>', views.get_aes_key, name='get_aes_key'),
+
 ]

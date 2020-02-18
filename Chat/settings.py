@@ -23,9 +23,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '7b0xwn22*z3&djxh@rk7)r)3!hvgbyg$@(okq+c%7)y9*58qrs'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+#DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['l-ink.herokuapp.com', '127.0.0.1', ]
+ALLOWED_HOSTS = ['l-ink.herokuapp.com', '127.0.0.1', 'test-l-ink.herokuapp.com',]
 
 
 # Application definition
@@ -40,6 +41,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'asgiref.inmemory.ChannelLayer',
+        'ROUTING': 'Chat.routing.channel_routing',
+    },
+}
+ASGI_APPLICATION = "Chat.routing.application"
+
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -50,7 +59,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
 ROOT_URLCONF = 'Chat.urls'
 
 TEMPLATES = [
@@ -74,7 +84,7 @@ WSGI_APPLICATION = 'Chat.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-
+"""
 DATABASES = {
     'default': {
     'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -86,6 +96,7 @@ DATABASES = {
     }
 }
 """
+
 DATABASES = {
     'default': {
     'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -96,9 +107,20 @@ DATABASES = {
     'PORT': '5432', # Set to empty string for default.
     }
 }
+
 """
-
-
+# База данных для тестирования test-l-ink
+DATABASES = {
+    'default': {
+    'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    'NAME': 'd2684vfd9s1kvs',
+    'USER': 'tpdptiiqmsjuau',
+    'PASSWORD': 'cce555b18a53f010ace04c4d9f76cd019094fa92e0b64b20176b36191de529b6',
+    'HOST': 'ec2-34-235-108-68.compute-1.amazonaws.com', # Set to empty string for localhost.
+    'PORT': '5432', # Set to empty string for default.
+    }
+}
+"""
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
 
