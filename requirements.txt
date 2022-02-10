@@ -14,7 +14,7 @@ channels==1.1.6
 chardet==3.0.4
 Click==7.0
 cryptography==2.8
-Django==2.2.1
+Django==2.2.27
 djangorestframework==3.9.4
 djangorestframework-simplejwt==4.3.0
 Flask==1.0.2
