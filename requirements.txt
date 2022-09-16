@@ -39,7 +39,7 @@ httplib2==0.12.3
 idna==2.8
 itsdangerous==1.1.0
 Jinja2==2.10
-Mako==1.0.7
+Mako==1.2.2
 MarkupSafe==1.1.0
 multidict==4.5.2
 ndg-httpsclient==0.5.1
